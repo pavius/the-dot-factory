@@ -35,7 +35,7 @@ namespace TheDotFactory
         public const string BitString0 = "0";
 
         // application version
-        public const string ApplicationVersion = "0.1.1.rc2";
+        public const string ApplicationVersion = "0.1.1";
 
         // current loaded bitmap
         private Bitmap m_currentLoadedBitmap = null;
