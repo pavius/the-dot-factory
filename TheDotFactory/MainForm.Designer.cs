@@ -32,6 +32,9 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copySourceToClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copyHeaderToClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -41,7 +44,6 @@
             this.tcInput = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.panel5 = new System.Windows.Forms.Panel();
-            this.txtInputText = new System.Windows.Forms.TextBox();
             this.panel10 = new System.Windows.Forms.Panel();
             this.panel6 = new System.Windows.Forms.Panel();
             this.btnInsertText = new System.Windows.Forms.Button();
@@ -92,10 +94,8 @@
             this.button3 = new System.Windows.Forms.Button();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.label16 = new System.Windows.Forms.Label();
-            this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.dlgSaveAs = new System.Windows.Forms.SaveFileDialog();
-            this.copySourceToClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.copyHeaderToClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.txtInputText = new System.Windows.Forms.TextBox();
             this.menuStrip1.SuspendLayout();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -135,18 +135,39 @@
             this.toolStripMenuItem1,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(35, 20);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
+            // 
+            // copySourceToClipboardToolStripMenuItem
+            // 
+            this.copySourceToClipboardToolStripMenuItem.Name = "copySourceToClipboardToolStripMenuItem";
+            this.copySourceToClipboardToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
+            this.copySourceToClipboardToolStripMenuItem.Text = "Copy Source to Clipboard";
+            this.copySourceToClipboardToolStripMenuItem.Click += new System.EventHandler(this.tsmCopySource_Click);
+            // 
+            // copyHeaderToClipboardToolStripMenuItem
+            // 
+            this.copyHeaderToClipboardToolStripMenuItem.Name = "copyHeaderToClipboardToolStripMenuItem";
+            this.copyHeaderToClipboardToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
+            this.copyHeaderToClipboardToolStripMenuItem.Text = "Copy Header to Clipboard";
+            this.copyHeaderToClipboardToolStripMenuItem.Click += new System.EventHandler(this.tsmCopyHeader_Click);
+            // 
+            // saveAsToolStripMenuItem
+            // 
+            this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
+            this.saveAsToolStripMenuItem.Text = "Save as files ...";
+            this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(149, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(209, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -155,13 +176,13 @@
             this.aboutToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.aboutToolStripMenuItem1});
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(40, 20);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
             this.aboutToolStripMenuItem.Text = "Help";
             // 
             // aboutToolStripMenuItem1
             // 
             this.aboutToolStripMenuItem1.Name = "aboutToolStripMenuItem1";
-            this.aboutToolStripMenuItem1.Size = new System.Drawing.Size(103, 22);
+            this.aboutToolStripMenuItem1.Size = new System.Drawing.Size(107, 22);
             this.aboutToolStripMenuItem1.Text = "About";
             this.aboutToolStripMenuItem1.Click += new System.EventHandler(this.aboutToolStripMenuItem1_Click);
             // 
@@ -228,15 +249,6 @@
             this.panel5.Name = "panel5";
             this.panel5.Size = new System.Drawing.Size(470, 129);
             this.panel5.TabIndex = 8;
-            // 
-            // txtInputText
-            // 
-            this.txtInputText.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtInputText.Location = new System.Drawing.Point(0, 0);
-            this.txtInputText.Multiline = true;
-            this.txtInputText.Name = "txtInputText";
-            this.txtInputText.Size = new System.Drawing.Size(470, 129);
-            this.txtInputText.TabIndex = 9;
             // 
             // panel10
             // 
@@ -469,12 +481,12 @@
             this.ctxMenuSource.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmCopySource});
             this.ctxMenuSource.Name = "ctxMenuSource";
-            this.ctxMenuSource.Size = new System.Drawing.Size(100, 26);
+            this.ctxMenuSource.Size = new System.Drawing.Size(103, 26);
             // 
             // tsmCopySource
             // 
             this.tsmCopySource.Name = "tsmCopySource";
-            this.tsmCopySource.Size = new System.Drawing.Size(99, 22);
+            this.tsmCopySource.Size = new System.Drawing.Size(102, 22);
             this.tsmCopySource.Text = "Copy";
             this.tsmCopySource.Click += new System.EventHandler(this.tsmCopySource_Click);
             // 
@@ -506,13 +518,13 @@
             this.ctxMenuHeader.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmCopyHeader});
             this.ctxMenuHeader.Name = "ctxMenuSource";
-            this.ctxMenuHeader.Size = new System.Drawing.Size(100, 26);
+            this.ctxMenuHeader.Size = new System.Drawing.Size(103, 26);
             this.ctxMenuHeader.Opening += new System.ComponentModel.CancelEventHandler(this.ctxMenuHeader_Opening);
             // 
             // tsmCopyHeader
             // 
             this.tsmCopyHeader.Name = "tsmCopyHeader";
-            this.tsmCopyHeader.Size = new System.Drawing.Size(99, 22);
+            this.tsmCopyHeader.Size = new System.Drawing.Size(102, 22);
             this.tsmCopyHeader.Text = "Copy";
             this.tsmCopyHeader.Click += new System.EventHandler(this.tsmCopyHeader_Click);
             // 
@@ -740,30 +752,18 @@
             this.label16.TabIndex = 29;
             this.label16.Text = "Preset:";
             // 
-            // saveAsToolStripMenuItem
-            // 
-            this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
-            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
-            this.saveAsToolStripMenuItem.Text = "Save as files ...";
-            this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
-            // 
             // dlgSaveAs
             // 
             this.dlgSaveAs.Title = "Save source and header";
             // 
-            // copySourceToClipboardToolStripMenuItem
+            // txtInputText
             // 
-            this.copySourceToClipboardToolStripMenuItem.Name = "copySourceToClipboardToolStripMenuItem";
-            this.copySourceToClipboardToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
-            this.copySourceToClipboardToolStripMenuItem.Text = "Copy Source to Clipboard";
-            this.copySourceToClipboardToolStripMenuItem.Click += new System.EventHandler(this.tsmCopySource_Click);
-            // 
-            // copyHeaderToClipboardToolStripMenuItem
-            // 
-            this.copyHeaderToClipboardToolStripMenuItem.Name = "copyHeaderToClipboardToolStripMenuItem";
-            this.copyHeaderToClipboardToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
-            this.copyHeaderToClipboardToolStripMenuItem.Text = "Copy Header to Clipboard";
-            this.copyHeaderToClipboardToolStripMenuItem.Click += new System.EventHandler(this.tsmCopyHeader_Click);
+            this.txtInputText.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtInputText.Location = new System.Drawing.Point(0, 0);
+            this.txtInputText.Multiline = true;
+            this.txtInputText.Name = "txtInputText";
+            this.txtInputText.Size = new System.Drawing.Size(470, 129);
+            this.txtInputText.TabIndex = 10;
             // 
             // MainForm
             // 
@@ -840,7 +840,6 @@
         private System.Windows.Forms.TabControl tcInput;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.Panel panel5;
-        private System.Windows.Forms.TextBox txtInputText;
         private System.Windows.Forms.Panel panel10;
         private System.Windows.Forms.Panel panel6;
         private System.Windows.Forms.Button btnInsertText;
@@ -872,6 +871,7 @@
         private System.Windows.Forms.SaveFileDialog dlgSaveAs;
         private System.Windows.Forms.ToolStripMenuItem copySourceToClipboardToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem copyHeaderToClipboardToolStripMenuItem;
+        private System.Windows.Forms.TextBox txtInputText;
 
     }
 }

@@ -41,7 +41,7 @@
             // 
             // panel2
             // 
-            this.panel2.BackColor = System.Drawing.SystemColors.ActiveCaptionText;
+            this.panel2.BackColor = System.Drawing.Color.AliceBlue;
             this.panel2.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.panel2.Controls.Add(this.linkIcons);
             this.panel2.Controls.Add(this.label3);
@@ -79,10 +79,10 @@
             this.linkContact.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
             this.linkContact.Location = new System.Drawing.Point(3, 5);
             this.linkContact.Name = "linkContact";
-            this.linkContact.Size = new System.Drawing.Size(95, 13);
+            this.linkContact.Size = new System.Drawing.Size(96, 13);
             this.linkContact.TabIndex = 2;
             this.linkContact.TabStop = true;
-            this.linkContact.Text = "admin@pavius.net";
+            this.linkContact.Text = "pavius@gmail.com";
             // 
             // linkSite
             // 

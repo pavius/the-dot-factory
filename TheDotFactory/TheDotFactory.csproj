@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
+    <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{03FBC09E-C0BB-4D1D-BFDE-79454C60D78C}</ProjectGuid>
     <OutputType>WinExe</OutputType>
@@ -94,6 +94,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="InputBox.resx">
       <DependentUpon>InputBox.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>

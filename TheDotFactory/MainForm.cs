@@ -35,7 +35,7 @@ namespace TheDotFactory
         public const string BitString0 = "0";
 
         // application version
-        public const string ApplicationVersion = "0.1.0";
+        public const string ApplicationVersion = "0.1.1.rc2";
 
         // current loaded bitmap
         private Bitmap m_currentLoadedBitmap = null;
@@ -113,6 +113,23 @@ namespace TheDotFactory
             public int offsetInBytes;
         }
 
+        // holds a range of chars
+        public class CharacterDescriptorArrayBlock
+        {
+            // characters
+            public ArrayList characters;
+
+            // holds a range of chars
+            public class Character
+            {
+                public FontInfo font;
+                public char character;
+                public int height;
+                public int width;
+                public int offset;
+            }
+        }
+        
         // strings for comments
         string m_commentStartString = "";
         string m_commentEndString = "";
@@ -243,9 +260,98 @@ namespace TheDotFactory
             updateSelectedFont();
         }
 
+        // try to parse character range
+        bool characterRangePointParse(string rangePointString, ref int rangePoint)
+        {
+            // trim the string
+            rangePointString = rangePointString.Trim();
+
+            // try to convert
+            try
+            {
+                // check if 0x is start of range
+                if (rangePointString.Substring(0, 2) == "0x")
+                {
+                    // remove 0x
+                    rangePointString = rangePointString.Substring(2, rangePointString.Length - 2);
+
+                    // do the parse
+                    rangePoint = Int32.Parse(rangePointString, System.Globalization.NumberStyles.HexNumber);
+                }
+                else
+                {
+                    // do the parse
+                    rangePoint = Int32.Parse(rangePointString);
+                }
+            }
+            catch
+            {
+                // error converting
+                return false;
+            }
+
+            // success
+            return true;
+        }
+
+        // expand and remove character ranges ( look for << x - y >> )
+        void expandAndRemoveCharacterRanges(ref string inputString)
+        {
+            // create the search pattern
+            //String searchPattern = @"<<.*-.*>>";
+            String searchPattern = @"<<(?<rangeStart>.*?)-(?<rangeEnd>.*?)>>";
+
+            // create the regex
+            Regex regex = new Regex(searchPattern, RegexOptions.Multiline);
+
+            // get matches
+            MatchCollection regexMatches = regex.Matches(inputString);
+
+            // holds the number of characters removed
+            int charactersRemoved = 0;
+
+            // for each match
+            foreach (Match regexMatch in regexMatches)
+            {
+                // get range start and end
+                int rangeStart = 0, rangeEnd = 0;
+                
+                // try to parse ranges
+                if (characterRangePointParse(regexMatch.Groups["rangeStart"].Value, ref rangeStart) &&
+                    characterRangePointParse(regexMatch.Groups["rangeEnd"].Value, ref rangeEnd))
+                {
+                    // remove this from the string
+                    inputString = inputString.Remove(regexMatch.Index - charactersRemoved, regexMatch.Length);
+
+                    // save the number of chars removed so that we can fixup index (the index
+                    // of the match changes as we remove characters)
+                    charactersRemoved += regexMatch.Length;
+
+                    // create a string from these values
+                    for (int charIndex = rangeStart; charIndex <= rangeEnd; ++charIndex)
+                    {
+                        // shove this character to a unicode char container
+                        char unicodeChar = (char)charIndex;
+
+                        // add this to the string
+                        inputString += unicodeChar;
+                    }
+                }
+            }
+        }
+
         // get the characters we need to generate
         string getCharactersToGenerate()
         {
+            string inputText = txtInputText.Text;
+
+            //
+            // Expand and remove all ranges from the input text (look for << x - y >>
+            //
+
+            // espand the ranges into the input text
+            expandAndRemoveCharacterRanges(ref inputText);
+            
             //
             // iterate through the inputted text and shove to sorted string, removing all duplicates
             //
@@ -254,10 +360,10 @@ namespace TheDotFactory
             SortedList<char, char> characterList = new SortedList<char, char>();
 
             // iterate over the characters in the textbox
-            for (int charIndex = 0; charIndex < txtInputText.Text.Length; ++charIndex)
+            for (int charIndex = 0; charIndex < inputText.Length; ++charIndex)
             {
                 // get teh char
-                char insertionCandidateChar = txtInputText.Text[charIndex];
+                char insertionCandidateChar = inputText[charIndex];
 
                 // insert the char, if not already in the list and if not space ()
                 if (!characterList.ContainsKey(insertionCandidateChar))
@@ -269,8 +375,15 @@ namespace TheDotFactory
                         continue;
                     }
 
+                    // dont generate newlines
+                    if (insertionCandidateChar == '\n' || insertionCandidateChar == '\r')
+                    {
+                        // no such characters
+                        continue;
+                    }
+
                     // not in list, add
-                    characterList.Add(txtInputText.Text[charIndex], ' ');
+                    characterList.Add(inputText[charIndex], ' ');
                 }
             }
 
@@ -1004,6 +1117,250 @@ namespace TheDotFactory
             return expression.Substring(firstVariableNameCharIndex, lastVariableNameCharIndex - firstVariableNameCharIndex + 1);
         }
 
+        // add a character to teh current char descriptor array
+        private void charDescArrayAddCharacter(CharacterDescriptorArrayBlock desciptorBlock,
+                                               FontInfo fontInfo, 
+                                               char character, 
+                                               int height, int width, int offset)
+        {
+            // create character descriptor
+            CharacterDescriptorArrayBlock.Character charDescriptor = new CharacterDescriptorArrayBlock.Character();
+                charDescriptor.character = character;
+                charDescriptor.font = fontInfo;
+                charDescriptor.height = height;
+                charDescriptor.width = width;
+                charDescriptor.offset = offset;
+
+            // shove this character to the descriptor block
+            desciptorBlock.characters.Add(charDescriptor);
+        }
+
+        // gnereate a list of blocks describing the characters
+        private void generateCharacterDescriptorBlockList(FontInfo fontInfo, ref ArrayList characterBlockList)
+        {
+            char currentCharacter, previousCharacter = '\0';
+
+            // initialize first block
+            CharacterDescriptorArrayBlock characterBlock = null;
+
+            // get the difference between two characters required to create a new group
+            int differenceBetweenCharsForNewGroup = m_outputConfig.generateLookupBlocks ?
+                    m_outputConfig.lookupBlocksNewAfterCharCount : int.MaxValue;
+
+            // iterate over characters, saving previous character each time
+            for (int charIndex = 0;
+                 charIndex < fontInfo.characters.Length;
+                 ++charIndex)
+            {
+                // get character
+                currentCharacter = fontInfo.characters[charIndex].character;
+
+                // check if this character is too far from the previous character and it isn't the first char
+                if (currentCharacter - previousCharacter < differenceBetweenCharsForNewGroup && previousCharacter != '\0')
+                {
+                    // it may not be far enough to generate a new group but it still may be non-sequential
+                    // in this case we need to generate place holders
+                    for (char sequentialCharIndex = (char)(previousCharacter + 1);
+                            sequentialCharIndex < currentCharacter;
+                            ++sequentialCharIndex)
+                    {
+                        // add the character placeholder to the current char block
+                        charDescArrayAddCharacter(characterBlock, fontInfo, sequentialCharIndex, 0, 0, 0);
+                    }
+
+                    // fall through and add to current block
+                }
+                else
+                {
+                    // done with current block, add to list (null is for first character which hasn't
+                    // created a group yet)
+                    if (characterBlock != null) characterBlockList.Add(characterBlock);
+
+                    // create new block
+                    characterBlock = new CharacterDescriptorArrayBlock();
+                    characterBlock.characters = new ArrayList();
+                }
+
+                // add to current block
+                charDescArrayAddCharacter(characterBlock, fontInfo, currentCharacter,
+                                          fontInfo.characters[charIndex].width,
+                                          fontInfo.characters[charIndex].height,
+                                          fontInfo.characters[charIndex].offsetInBytes);
+
+                // save previous char
+                previousCharacter = currentCharacter;
+            }
+
+            // done; add current block to list
+            characterBlockList.Add(characterBlock);
+        }
+
+        // get character descriptor array block name
+        private string charDescArrayGetBlockName(FontInfo fontInfo, int currentBlockIndex, 
+                                                 bool includeTypeDefinition, bool includeBlockIndex)
+        {
+            // get block id
+            string blockIdString = String.Format("Block{0}", currentBlockIndex);
+
+            // variable name
+            string variableName = String.Format(m_outputConfig.varNfCharInfo, getFontName(ref fontInfo.font));
+
+            // remove type unless required
+            if (!includeTypeDefinition) variableName = getVariableNameFromExpression(variableName);
+
+            // return the block name
+            return String.Format("{0}{1}{2}",
+                                    variableName,
+                                    includeBlockIndex ? blockIdString : "",
+                                    includeTypeDefinition ? "[]" : "");
+        }
+
+        // get the display string for a character (ASCII is displayed as 'x', non-ASCII as numeric)
+        private string getCharacterDisplayString(char character)
+        {
+            // ASCII?
+            if (character < 255)
+            {
+                // as character
+                return String.Format("'{0}'", character);
+            }
+            else
+            {
+                // display as number
+                int numericValue = (int)character;
+                
+                // return string
+                return numericValue.ToString();
+            }
+        }
+        
+        // generate source/header strings from a block list
+        private void generateStringsFromCharacterDescriptorBlockList(FontInfo fontInfo, ArrayList characterBlockList,
+                                                                     ref string resultTextSource, ref string resultTextHeader,
+                                                                     ref bool blockLookupGenerated)
+        {
+            // get wheter there are multiple block lsits
+            bool multipleDescBlocksExist = characterBlockList.Count > 1;
+
+            // set whether we'll generate lookups
+            blockLookupGenerated = multipleDescBlocksExist;
+
+            //
+            // Generate descriptor arrays
+            //
+
+            // iterate over blocks
+            foreach (CharacterDescriptorArrayBlock block in characterBlockList)
+            {
+                // according to config
+                if (m_outputConfig.commentVariableName)
+                {
+                    string blockNumberString = String.Format("(block #{0})", characterBlockList.IndexOf(block));
+
+                    // result string
+                    resultTextSource += String.Format("{0}Character descriptors for {1} {2}pt{3}{4}\r\n",
+                                                        m_commentStartString, fontInfo.font.Name,
+                                                        Math.Round(fontInfo.font.Size), multipleDescBlocksExist ? blockNumberString : "",
+                                                        m_commentEndString);
+
+                    // describe character array
+                    resultTextSource += String.Format("{0}{{ {1}{2}[Offset into {3}CharBitmaps in bytes] }}{4}\r\n",
+                                                        m_commentStartString,
+                                                        getCharacterDescName("width", m_outputConfig.descCharWidth),
+                                                        getCharacterDescName("height", m_outputConfig.descCharHeight),
+                                                        getFontName(ref fontInfo.font),
+                                                        m_commentEndString);
+                }
+
+                // output block header
+                resultTextSource += String.Format("{0} = \r\n{{\r\n", charDescArrayGetBlockName(fontInfo, characterBlockList.IndexOf(block), true, multipleDescBlocksExist));
+
+                // iterate characters
+                foreach (CharacterDescriptorArrayBlock.Character character in block.characters)
+                {
+                    // add character
+                    resultTextSource += String.Format("\t{{{0}{1}{2}}}, \t\t{3}{4}{5}\r\n",
+                                                    getCharacterDescString(m_outputConfig.descCharWidth, character.width),
+                                                    getCharacterDescString(m_outputConfig.descCharHeight, character.height),
+                                                    character.offset,
+                                                    m_commentStartString,
+                                                    character.character,
+                                                    m_commentEndString + " ");
+                }
+
+                // terminate current block
+                resultTextSource += "};\r\n\r\n";
+            }
+
+            //
+            // Generate block lookup 
+            //
+
+            // if there is more than one block, we need to generate a block lookup
+            if (multipleDescBlocksExist)
+            {
+                // start with comment, if required
+                if (m_outputConfig.commentVariableName)
+                {
+                    // result string
+                    resultTextSource += String.Format("{0}Block lookup array for {1} {2}pt {3}\r\n",
+                                                        m_commentStartString, fontInfo.font.Name,
+                                                        Math.Round(fontInfo.font.Size), m_commentEndString);
+
+                    // describe character array
+                    resultTextSource += String.Format("{0}{{ start character, end character, ptr to descriptor block array }}{1}\r\n",
+                                                        m_commentStartString,
+                                                        m_commentEndString);
+                }
+
+                // format the block lookup header
+                resultTextSource += String.Format("const FONT_CHAR_INFO_LOOKUP {0}[] = \r\n{{\r\n", 
+                                                    getCharacterDescriptorArrayLookupDisplayString(fontInfo));
+
+                // iterate
+                foreach (CharacterDescriptorArrayBlock block in characterBlockList)
+                {
+                    // get first/last chars
+                    CharacterDescriptorArrayBlock.Character firstChar = (CharacterDescriptorArrayBlock.Character)block.characters[0],
+                                                            lastChar = (CharacterDescriptorArrayBlock.Character)block.characters[block.characters.Count - 1];
+
+                    // create current block description
+                    resultTextSource += String.Format("\t{{{0}, {1}, &{2}}},\r\n",
+                                                                getCharacterDisplayString(firstChar.character),
+                                                                getCharacterDisplayString(lastChar.character),
+                                                                charDescArrayGetBlockName(fontInfo, characterBlockList.IndexOf(block), false, true));
+                }
+
+                // terminate block lookup
+                resultTextSource += "};\r\n\r\n";
+            }
+        }
+
+        //
+        private string getCharacterDescriptorArrayLookupDisplayString(FontInfo fontInfo)
+        {
+            // return the string
+            return String.Format("{0}BlockLookup", getFontName(ref fontInfo.font));
+        }
+        
+        // generate lookup array
+        private void generateCharacterDescriptorArray(FontInfo fontInfo, ref string resultTextSource, 
+                                                        ref string resultTextHeader, ref bool blockLookupGenerated)
+        {
+            // check if required by configuration
+            if (m_outputConfig.generateLookupArray)
+            {
+                ArrayList characterBlockList = new ArrayList();
+
+                // populate list of blocks
+                generateCharacterDescriptorBlockList(fontInfo, ref characterBlockList);
+
+                // generate strings from block list
+                generateStringsFromCharacterDescriptorBlockList(fontInfo, characterBlockList, ref resultTextSource, 
+                                                                ref resultTextHeader, ref blockLookupGenerated);
+            }
+        }
+
         // generate the strings
         private void generateStringsFromFontInfo(FontInfo fontInfo, ref string resultTextSource, ref string resultTextHeader)
         {
@@ -1021,7 +1378,7 @@ namespace TheDotFactory
             }
 
             // get bitmap name
-            string charBitmapVarName = String.Format(m_outputConfig.varNfBitmaps, getFontName(ref fontInfo.font));
+            string charBitmapVarName = String.Format(m_outputConfig.varNfBitmaps, getFontName(ref fontInfo.font)) + "[]";
 
             // header var
             resultTextHeader += String.Format("extern {0};\r\n", charBitmapVarName);
@@ -1069,80 +1426,11 @@ namespace TheDotFactory
             // Charater descriptor
             //
 
-            // check if required by configuration
-            if (m_outputConfig.generateLookupArray)
-            {
-                // according to config
-                if (m_outputConfig.commentVariableName)
-                {
-                    // result string
-                    resultTextSource += String.Format("{0}Character descriptors for {1} {2}pt{3}\r\n",
-                                                        m_commentStartString, fontInfo.font.Name,
-                                                        Math.Round(fontInfo.font.Size), m_commentEndString);
+            // whether or not block lookup was generated
+            bool blockLookupGenerated = false;
 
-                    // describe character array
-                    resultTextSource += String.Format("{0}{{ {1}{2}[Offset into {3}CharBitmaps in bytes] }}{4}\r\n",
-                                                        m_commentStartString,
-                                                        getCharacterDescName("width", m_outputConfig.descCharWidth),
-                                                        getCharacterDescName("height", m_outputConfig.descCharHeight),
-                                                        getFontName(ref fontInfo.font),
-                                                        m_commentEndString);
-                }
-
-                // character name
-                string charDescriptorVarName = String.Format(m_outputConfig.varNfCharInfo, getFontName(ref fontInfo.font));
-
-                // add character array for header
-                resultTextHeader += String.Format("extern {0};\r\n", charDescriptorVarName);
-
-                // array for characters
-                resultTextSource += String.Format("{0} =\r\n{{\r\n", charDescriptorVarName);
-
-                // iterate over characters
-                for (char character = fontInfo.startChar; character <= fontInfo.endChar; ++character)
-                {
-                    int width, height, offset;
-
-                    // get char index
-                    int charIndex = fontInfo.generatedChars.IndexOf(character);
-
-                    // check if we generated this character
-                    if (charIndex != -1)
-                    {
-                        // from char info
-                        width = fontInfo.characters[charIndex].width;
-                        height = fontInfo.characters[charIndex].height;
-                        offset = fontInfo.characters[charIndex].offsetInBytes;
-                    }
-                    else
-                    {
-                        // unused
-                        width = height = offset = 0;
-                    }
-
-                    // the end comment
-                    string endComment = m_commentEndString;
-
-                    // don't write '\' as the last character. shove a space after teh comment
-                    if (m_outputConfig.commentStyle == OutputConfiguration.CommentStyle.Cpp)
-                    {
-                        // add a space
-                        endComment += " ";
-                    }
-
-                    // add info
-                    resultTextSource += String.Format("\t{{{0}{1}{2}}}, \t\t{3}{4}{5}\r\n",
-                                                    getCharacterDescString(m_outputConfig.descCharWidth, width),
-                                                    getCharacterDescString(m_outputConfig.descCharHeight, height),
-                                                    offset,
-                                                    m_commentStartString,
-                                                    character,
-                                                    endComment);
-                }
-
-                // terminate array
-                resultTextSource += "};\r\n\r\n";
-            }
+            // generate the lookup array
+            generateCharacterDescriptorArray(fontInfo, ref resultTextSource, ref resultTextHeader, ref blockLookupGenerated);
 
             //
             // Font descriptor
@@ -1190,21 +1478,63 @@ namespace TheDotFactory
             // font info
             resultTextSource += String.Format("{2} =\r\n{{\r\n" +
                                               "{3}" +
-                                              "\t'{4}', {0} Start character{1}\r\n" +
-                                              "\t'{5}', {0} End character{1}\r\n" +
+                                              "\t{4}, {0} Start character{1}\r\n" +
+                                              "\t{5}, {0} End character{1}\r\n" +
                                               "{6}" +
-                                              "\t{7}, {0} Character decriptor array{1}\r\n" +
+                                              "{7}" +
                                               "\t{8}, {0} Character bitmap array{1}\r\n" +
                                               "}};\r\n",
                                               m_commentStartString,
                                               m_commentEndString,
                                               fontInfoVarName,
                                               fontCharHeightString,
-                                              (char)fontInfo.startChar,
-                                              (char)fontInfo.endChar,
+                                              getCharacterDisplayString(fontInfo.startChar),
+                                              getCharacterDisplayString(fontInfo.endChar),
                                               spaceCharacterPixelWidthString,
-                                              getVariableNameFromExpression(String.Format(m_outputConfig.varNfCharInfo, getFontName(ref fontInfo.font))),
+                                              getFontInfoDescriptorsString(fontInfo, blockLookupGenerated),
                                               getVariableNameFromExpression(String.Format(m_outputConfig.varNfBitmaps, getFontName(ref fontInfo.font))));
+
+            // add the appropriate entity to the header
+            if (blockLookupGenerated)
+            {
+                // add block lookup to header
+                resultTextHeader += String.Format("extern const FONT_CHAR_INFO_LOOKUP {0}[];\r\n", getCharacterDescriptorArrayLookupDisplayString(fontInfo));
+            }
+            else
+            {
+                // add block lookup to header
+                resultTextHeader += String.Format("extern {0}[];\r\n", String.Format(m_outputConfig.varNfCharInfo, getFontName(ref fontInfo.font)));
+            }
+        }
+    
+        // get the descriptors
+        private string getFontInfoDescriptorsString(FontInfo fontInfo, bool blockLookupGenerated)
+        {
+            string descriptorString = "";
+
+            // if a lookup arrays are required, point to it
+            if (m_outputConfig.generateLookupBlocks)
+            {
+                // add to string
+                descriptorString += String.Format("\t{0}, {1} Character block lookup{2}\r\n",
+                                                    blockLookupGenerated ? getCharacterDescriptorArrayLookupDisplayString(fontInfo) : "NULL", 
+                                                    m_commentStartString, m_commentEndString);
+
+                // add to string
+                descriptorString += String.Format("\t{0}, {1} Character descriptor array{2}\r\n",
+                                                    blockLookupGenerated ? "NULL" : getVariableNameFromExpression(String.Format(m_outputConfig.varNfCharInfo, getFontName(ref fontInfo.font))),
+                                                    m_commentStartString, m_commentEndString);
+            }
+            else
+            {
+                // add descriptor array
+                descriptorString += String.Format("\t{0}, {1} Character descriptor array{2}\r\n", 
+                                                    getVariableNameFromExpression(String.Format(m_outputConfig.varNfCharInfo, getFontName(ref fontInfo.font))), 
+                                                    m_commentStartString, m_commentEndString);
+            }
+
+            // return the string
+            return descriptorString;
         }
 
         // generate the required output for text

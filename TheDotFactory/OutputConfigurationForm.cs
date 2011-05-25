@@ -65,6 +65,7 @@ namespace TheDotFactory
             // text boxes
             cbxByteLeadingChar.Text = outputConfig.byteLeadingString;
             txtSpacePixels.Text = outputConfig.spaceGenerationPixels.ToString();
+            txtLookupBlocksNewAfterCharCount.Text = outputConfig.lookupBlocksNewAfterCharCount.ToString();
             cbxOutputConfigurations.Text = outputConfig.displayName;
             txtVarNfBitmaps.Text = outputConfig.varNfBitmaps;
             txtVarNfCharInfo.Text = outputConfig.varNfCharInfo;
@@ -81,6 +82,7 @@ namespace TheDotFactory
             cbxGenerateSpaceBitmap.Checked = outputConfig.generateSpaceCharacterBitmap;
             cbxGenerateLookupArray.Checked = outputConfig.generateLookupArray;
             txtBmpVisualizerChar.Text = outputConfig.bmpVisualizerChar;
+            cbxGenerateLookupBlocks.Checked = outputConfig.generateLookupBlocks;
 
             // radio buttons
             // -- wrap          
@@ -108,6 +110,7 @@ namespace TheDotFactory
             // text boxes
             outputConfig.byteLeadingString = cbxByteLeadingChar.Text;
             outputConfig.spaceGenerationPixels = (int)System.Convert.ToInt32(txtSpacePixels.Text, 10);
+            outputConfig.lookupBlocksNewAfterCharCount = System.Convert.ToInt32(txtLookupBlocksNewAfterCharCount.Text, 10);
             outputConfig.varNfBitmaps = txtVarNfBitmaps.Text;
             outputConfig.varNfCharInfo = txtVarNfCharInfo.Text;
             outputConfig.varNfFontInfo = txtVarNfFontInfo.Text;
@@ -123,6 +126,7 @@ namespace TheDotFactory
             outputConfig.generateSpaceCharacterBitmap = cbxGenerateSpaceBitmap.Checked;
             outputConfig.generateLookupArray = cbxGenerateLookupArray.Checked;
             outputConfig.bmpVisualizerChar = txtBmpVisualizerChar.Text;
+            outputConfig.generateLookupBlocks = cbxGenerateLookupBlocks.Checked;
 
             // radio buttons
             // -- wrap
@@ -396,6 +400,11 @@ namespace TheDotFactory
                 // when user has changed a preset, enter modifying state
                 modifyingPresetConfigurationEnter();
             }
+        }
+
+        private void txtLookupBlocksNewAfterCharCount_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

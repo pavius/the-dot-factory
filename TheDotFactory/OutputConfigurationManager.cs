@@ -126,14 +126,16 @@ namespace TheDotFactory
         public DescriptorFormat descCharWidth = DescriptorFormat.DisplayInBits;
         public DescriptorFormat descCharHeight = DescriptorFormat.DontDisplay;
         public DescriptorFormat descFontHeight = DescriptorFormat.DisplayInBytes;
+        public bool generateLookupBlocks = false;
+        public int lookupBlocksNewAfterCharCount = 80;
 
         // space generation
         public bool generateSpaceCharacterBitmap = false;
         public int spaceGenerationPixels = 2;
 
         // variable formats
-        public string varNfBitmaps = "const uint_8 {0}Bitmaps[]";
-        public string varNfCharInfo = "const FONT_CHAR_INFO {0}Descriptors[]";
+        public string varNfBitmaps = "const uint_8 {0}Bitmaps";
+        public string varNfCharInfo = "const FONT_CHAR_INFO {0}Descriptors";
         public string varNfFontInfo = "const FONT_INFO {0}FontInfo";
         public string varNfWidth = "const uint_8 {0}WidthPages";
         public string varNfHeight = "const uint_8 {0}HeightPixels";
