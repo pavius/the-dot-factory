@@ -91,6 +91,10 @@
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
+            this.cbxImgHeightFormat = new System.Windows.Forms.ComboBox();
+            this.label22 = new System.Windows.Forms.Label();
+            this.cbxImgWidthFormat = new System.Windows.Forms.ComboBox();
+            this.label23 = new System.Windows.Forms.Label();
             this.groupBox3.SuspendLayout();
             this.gbxPadding.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -470,6 +474,10 @@
             // 
             // groupBox6
             // 
+            this.groupBox6.Controls.Add(this.cbxImgHeightFormat);
+            this.groupBox6.Controls.Add(this.label22);
+            this.groupBox6.Controls.Add(this.cbxImgWidthFormat);
+            this.groupBox6.Controls.Add(this.label23);
             this.groupBox6.Controls.Add(this.txtLookupBlocksNewAfterCharCount);
             this.groupBox6.Controls.Add(this.label21);
             this.groupBox6.Controls.Add(this.label13);
@@ -485,7 +493,7 @@
             this.groupBox6.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.groupBox6.Location = new System.Drawing.Point(443, 58);
             this.groupBox6.Name = "groupBox6";
-            this.groupBox6.Size = new System.Drawing.Size(222, 211);
+            this.groupBox6.Size = new System.Drawing.Size(222, 269);
             this.groupBox6.TabIndex = 43;
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "Descriptors";
@@ -625,7 +633,7 @@
             this.groupBox7.Controls.Add(this.label6);
             this.groupBox7.Controls.Add(this.txtSpacePixels);
             this.groupBox7.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBox7.Location = new System.Drawing.Point(443, 275);
+            this.groupBox7.Location = new System.Drawing.Point(443, 332);
             this.groupBox7.Name = "groupBox7";
             this.groupBox7.Size = new System.Drawing.Size(222, 75);
             this.groupBox7.TabIndex = 44;
@@ -815,6 +823,50 @@
             this.label9.TabIndex = 43;
             this.label9.Text = "Bitmaps:";
             // 
+            // cbxImgHeightFormat
+            // 
+            this.cbxImgHeightFormat.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbxImgHeightFormat.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.cbxImgHeightFormat.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.cbxImgHeightFormat.FormattingEnabled = true;
+            this.cbxImgHeightFormat.Location = new System.Drawing.Point(87, 238);
+            this.cbxImgHeightFormat.Name = "cbxImgHeightFormat";
+            this.cbxImgHeightFormat.Size = new System.Drawing.Size(112, 21);
+            this.cbxImgHeightFormat.TabIndex = 64;
+            this.cbxImgHeightFormat.SelectedIndexChanged += new System.EventHandler(this.onOutputConfigurationFormChange);
+            // 
+            // label22
+            // 
+            this.label22.AutoSize = true;
+            this.label22.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.label22.Location = new System.Drawing.Point(10, 241);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(71, 13);
+            this.label22.TabIndex = 63;
+            this.label22.Text = "Image height:";
+            // 
+            // cbxImgWidthFormat
+            // 
+            this.cbxImgWidthFormat.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbxImgWidthFormat.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.cbxImgWidthFormat.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.cbxImgWidthFormat.FormattingEnabled = true;
+            this.cbxImgWidthFormat.Location = new System.Drawing.Point(87, 212);
+            this.cbxImgWidthFormat.Name = "cbxImgWidthFormat";
+            this.cbxImgWidthFormat.Size = new System.Drawing.Size(112, 21);
+            this.cbxImgWidthFormat.TabIndex = 62;
+            this.cbxImgWidthFormat.SelectedIndexChanged += new System.EventHandler(this.onOutputConfigurationFormChange);
+            // 
+            // label23
+            // 
+            this.label23.AutoSize = true;
+            this.label23.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.label23.Location = new System.Drawing.Point(14, 215);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(67, 13);
+            this.label23.TabIndex = 61;
+            this.label23.Text = "Image width:";
+            // 
             // OutputConfigurationForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -925,5 +977,9 @@
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.TextBox txtLookupBlocksNewAfterCharCount;
+        private System.Windows.Forms.ComboBox cbxImgHeightFormat;
+        private System.Windows.Forms.Label label22;
+        private System.Windows.Forms.ComboBox cbxImgWidthFormat;
+        private System.Windows.Forms.Label label23;
     }
 }

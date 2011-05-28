@@ -35,7 +35,7 @@ namespace TheDotFactory
         public const string BitString0 = "0";
 
         // application version
-        public const string ApplicationVersion = "0.1.1.rc2";
+        public const string ApplicationVersion = "0.1.2";
 
         // current loaded bitmap
         private Bitmap m_currentLoadedBitmap = null;
@@ -1120,8 +1120,8 @@ namespace TheDotFactory
         // add a character to teh current char descriptor array
         private void charDescArrayAddCharacter(CharacterDescriptorArrayBlock desciptorBlock,
                                                FontInfo fontInfo, 
-                                               char character, 
-                                               int height, int width, int offset)
+                                               char character,
+                                               int width, int height, int offset)
         {
             // create character descriptor
             CharacterDescriptorArrayBlock.Character charDescriptor = new CharacterDescriptorArrayBlock.Character();
@@ -1655,13 +1655,33 @@ namespace TheDotFactory
                 string heightVarName = String.Format(m_outputConfig.varNfHeight, imageName);
                 string widthVarName = String.Format(m_outputConfig.varNfWidth, imageName);
 
-                // add sizes to header
-                resultTextHeader += String.Format("extern {0};\r\n", widthVarName);
-                resultTextHeader += String.Format("extern {0};\r\n", heightVarName);
+                // display width in bytes?
+                if (m_outputConfig.descImgWidth == OutputConfiguration.DescriptorFormat.DisplayInBytes)
+                {
+                    // in pages
+                    resultTextSource += String.Format("{0}Pages = {1};\r\n", widthVarName, pagesPerRow);
+                    resultTextHeader += String.Format("extern {0}Pages;\r\n", widthVarName);
+                }
+                else
+                {
+                    // in pixels
+                    resultTextSource += String.Format("{0}Pixels = {1};\r\n", widthVarName, bitmapManipulated.Width);
+                    resultTextHeader += String.Format("extern {0}Pixels;\r\n", widthVarName);
+                }
 
-                // add sizes to source
-                resultTextSource += String.Format("{0} = {1};\r\n", widthVarName, pagesPerRow);
-                resultTextSource += String.Format("{0} = {1};\r\n", heightVarName, bitmapManipulated.Height);
+                // display height in bytes?
+                if (m_outputConfig.descImgHeight == OutputConfiguration.DescriptorFormat.DisplayInBytes)
+                {
+                    // in pages
+                    resultTextSource += String.Format("{0}Pages = {1};\r\n", heightVarName, convertValueByDescriptorFormat(OutputConfiguration.DescriptorFormat.DisplayInBytes, bitmapManipulated.Height));
+                    resultTextHeader += String.Format("extern {0}Pages;\r\n", heightVarName);
+                }
+                else
+                {
+                    // in pixels
+                    resultTextSource += String.Format("{0}Pixels = {1};\r\n", heightVarName, bitmapManipulated.Height);
+                    resultTextHeader += String.Format("extern {0}Pixels;\r\n", heightVarName);
+                }
             }
         }
 

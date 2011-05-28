@@ -35,7 +35,9 @@ namespace TheDotFactory
             foreach (string s in OutputConfiguration.RotationDisplayString) cbxRotation.Items.Add(s);
             foreach (string s in OutputConfiguration.DescriptorFormatDisplayString) cbxCharWidthFormat.Items.Add(s);
             foreach (string s in OutputConfiguration.DescriptorFormatDisplayString) cbxCharHeightFormat.Items.Add(s);
-            foreach (string s in OutputConfiguration.DescriptorFormatDisplayString) cbxFontHeightFormat.Items.Add(s); 
+            foreach (string s in OutputConfiguration.DescriptorFormatDisplayString) cbxFontHeightFormat.Items.Add(s);
+            foreach (string s in OutputConfiguration.DescriptorFormatDisplayString) cbxImgWidthFormat.Items.Add(s);
+            foreach (string s in OutputConfiguration.DescriptorFormatDisplayString) cbxImgHeightFormat.Items.Add(s); 
 
             // add leading
             cbxByteLeadingChar.Items.Add(OutputConfiguration.ByteLeadingStringBinary);
@@ -61,6 +63,9 @@ namespace TheDotFactory
             cbxCharWidthFormat.SelectedIndex = (int)outputConfig.descCharWidth;
             cbxCharHeightFormat.SelectedIndex = (int)outputConfig.descCharHeight;
             cbxFontHeightFormat.SelectedIndex = (int)outputConfig.descFontHeight;
+            cbxImgWidthFormat.SelectedIndex = (int)outputConfig.descImgWidth;
+            cbxImgHeightFormat.SelectedIndex = (int)outputConfig.descImgHeight;
+
 
             // text boxes
             cbxByteLeadingChar.Text = outputConfig.byteLeadingString;
@@ -106,6 +111,8 @@ namespace TheDotFactory
             outputConfig.descCharWidth = (OutputConfiguration.DescriptorFormat)Array.IndexOf(OutputConfiguration.DescriptorFormatDisplayString, cbxCharWidthFormat.Text);
             outputConfig.descCharHeight = (OutputConfiguration.DescriptorFormat)Array.IndexOf(OutputConfiguration.DescriptorFormatDisplayString, cbxCharHeightFormat.Text);
             outputConfig.descFontHeight = (OutputConfiguration.DescriptorFormat)Array.IndexOf(OutputConfiguration.DescriptorFormatDisplayString, cbxFontHeightFormat.Text);
+            outputConfig.descImgWidth = (OutputConfiguration.DescriptorFormat)Array.IndexOf(OutputConfiguration.DescriptorFormatDisplayString, cbxImgWidthFormat.Text);
+            outputConfig.descImgHeight = (OutputConfiguration.DescriptorFormat)Array.IndexOf(OutputConfiguration.DescriptorFormatDisplayString, cbxImgHeightFormat.Text);
 
             // text boxes
             outputConfig.byteLeadingString = cbxByteLeadingChar.Text;
