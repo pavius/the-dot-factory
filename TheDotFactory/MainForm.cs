@@ -33,6 +33,7 @@ namespace TheDotFactory
         public const string HeaderStringColumnMid = ", 0b";
         public const string BitString1 = "1";
         public const string BitString0 = "0";
+        private static String nl = Environment.NewLine;
 
         // application version
         public const string ApplicationVersion = "0.1.2";
@@ -142,33 +143,33 @@ namespace TheDotFactory
         }
 
         // update input font
-        private void updateSelectedFont()
+        private void updateSelectedFont(Font fnt)
         {
             // set text name in the text box
-            txtInputFont.Text = fontDlgInputFont.Font.Name;
+            txtInputFont.Text = fnt.Name;
 
             // add to text
-            txtInputFont.Text += " " + Math.Round(fontDlgInputFont.Font.Size) + "pts";
+            txtInputFont.Text += " " + Math.Round(fnt.Size) + "pts";
 
             // check if bold
-            if (fontDlgInputFont.Font.Bold)
+            if (fnt.Bold)
             {
                 // add to text
                 txtInputFont.Text += " / Bold";
             }
 
             // check if italic
-            if (fontDlgInputFont.Font.Italic)
+            if (fnt.Italic)
             {
                 // add to text
                 txtInputFont.Text += " / Italic";
             }
 
             // set the font in the text box
-            txtInputText.Font = fontDlgInputFont.Font;
+            txtInputText.Font = (Font)fnt.Clone();
 
             // save into settings
-            Properties.Settings.Default.InputFont = fontDlgInputFont.Font;
+            Properties.Settings.Default.InputFont = fnt;
             Properties.Settings.Default.Save();
         }
 
@@ -178,9 +179,9 @@ namespace TheDotFactory
             label1.Focus();
             
             // open font chooser dialog
-            if (fontDlgInputFont.ShowDialog() != DialogResult.Cancel)
+            if (fontDlgInputFont.ShowDialog(this) == DialogResult.OK)
             {
-                updateSelectedFont();
+                updateSelectedFont(fontDlgInputFont.Font);
             }
         }
 
@@ -223,7 +224,6 @@ namespace TheDotFactory
 
             // load font
             fontDlgInputFont.Font = Properties.Settings.Default.InputFont;
-            updateSelectedFont();
 
             // load configurations from file
             m_outputConfigurationManager.loadFromFile("OutputConfigs.xml");
@@ -257,7 +257,7 @@ namespace TheDotFactory
             populateTextInsertCheckbox();
 
             // apply font to all appropriate places
-            updateSelectedFont();
+            updateSelectedFont(Properties.Settings.Default.InputFont);
         }
 
         // try to parse character range
@@ -985,7 +985,7 @@ namespace TheDotFactory
                     }
                     
                     // add newline
-                    resultString += "\r\n";
+                    resultString += nl;
 
                     // if not last, add tab
                     if (charIdx != pages.Count) resultString += "\t";
@@ -993,7 +993,7 @@ namespace TheDotFactory
             }
 
             // add newline if per bitmap
-            if (m_outputConfig.lineWrap == OutputConfiguration.LineWrap.AtBitmap) resultString += "\r\n";
+            if (m_outputConfig.lineWrap == OutputConfiguration.LineWrap.AtBitmap) resultString += nl;
 
             // return the result
             return resultString;
@@ -1003,7 +1003,7 @@ namespace TheDotFactory
         private string getFontName(ref Font font)
         {
             // get font name
-            string fontName = font.Name.Replace(" ", "") + Math.Round(font.Size) + "pt";
+            string fontName = font.Name.Replace(" ", "").Replace("'", "_") + Math.Round(font.Size) + "pt";
 
             // get first char
             char firstChar = fontName[0];
@@ -1258,13 +1258,13 @@ namespace TheDotFactory
                     string blockNumberString = String.Format("(block #{0})", characterBlockList.IndexOf(block));
 
                     // result string
-                    resultTextSource += String.Format("{0}Character descriptors for {1} {2}pt{3}{4}\r\n",
+                    resultTextSource += String.Format("{0}Character descriptors for {1} {2}pt{3}{4}" + nl,
                                                         m_commentStartString, fontInfo.font.Name,
                                                         Math.Round(fontInfo.font.Size), multipleDescBlocksExist ? blockNumberString : "",
                                                         m_commentEndString);
 
                     // describe character array
-                    resultTextSource += String.Format("{0}{{ {1}{2}[Offset into {3}CharBitmaps in bytes] }}{4}\r\n",
+                    resultTextSource += String.Format("{0}{{ {1}{2}[Offset into {3}CharBitmaps in bytes] }}{4}" + nl,
                                                         m_commentStartString,
                                                         getCharacterDescName("width", m_outputConfig.descCharWidth),
                                                         getCharacterDescName("height", m_outputConfig.descCharHeight),
@@ -1273,13 +1273,13 @@ namespace TheDotFactory
                 }
 
                 // output block header
-                resultTextSource += String.Format("{0} = \r\n{{\r\n", charDescArrayGetBlockName(fontInfo, characterBlockList.IndexOf(block), true, multipleDescBlocksExist));
+                resultTextSource += String.Format("{0} = "+ nl+"{{" + nl, charDescArrayGetBlockName(fontInfo, characterBlockList.IndexOf(block), true, multipleDescBlocksExist));
 
                 // iterate characters
                 foreach (CharacterDescriptorArrayBlock.Character character in block.characters)
                 {
                     // add character
-                    resultTextSource += String.Format("\t{{{0}{1}{2}}}, \t\t{3}{4}{5}\r\n",
+                    resultTextSource += String.Format("\t{{{0}{1}{2}}}, \t\t{3}{4}{5}" + nl,
                                                     getCharacterDescString(m_outputConfig.descCharWidth, character.width),
                                                     getCharacterDescString(m_outputConfig.descCharHeight, character.height),
                                                     character.offset,
@@ -1289,7 +1289,7 @@ namespace TheDotFactory
                 }
 
                 // terminate current block
-                resultTextSource += "};\r\n\r\n";
+                resultTextSource += "};" + nl + nl;
             }
 
             //
@@ -1303,18 +1303,18 @@ namespace TheDotFactory
                 if (m_outputConfig.commentVariableName)
                 {
                     // result string
-                    resultTextSource += String.Format("{0}Block lookup array for {1} {2}pt {3}\r\n",
+                    resultTextSource += String.Format("{0}Block lookup array for {1} {2}pt {3}" + nl,
                                                         m_commentStartString, fontInfo.font.Name,
                                                         Math.Round(fontInfo.font.Size), m_commentEndString);
 
                     // describe character array
-                    resultTextSource += String.Format("{0}{{ start character, end character, ptr to descriptor block array }}{1}\r\n",
+                    resultTextSource += String.Format("{0}{{ start character, end character, ptr to descriptor block array }}{1}" + nl,
                                                         m_commentStartString,
                                                         m_commentEndString);
                 }
 
                 // format the block lookup header
-                resultTextSource += String.Format("const FONT_CHAR_INFO_LOOKUP {0}[] = \r\n{{\r\n", 
+                resultTextSource += String.Format("const FONT_CHAR_INFO_LOOKUP {0}[] = " + nl+"{{" + nl, 
                                                     getCharacterDescriptorArrayLookupDisplayString(fontInfo));
 
                 // iterate
@@ -1325,14 +1325,14 @@ namespace TheDotFactory
                                                             lastChar = (CharacterDescriptorArrayBlock.Character)block.characters[block.characters.Count - 1];
 
                     // create current block description
-                    resultTextSource += String.Format("\t{{{0}, {1}, &{2}}},\r\n",
+                    resultTextSource += String.Format("\t{{{0}, {1}, &{2}}}," + nl,
                                                                 getCharacterDisplayString(firstChar.character),
                                                                 getCharacterDisplayString(lastChar.character),
                                                                 charDescArrayGetBlockName(fontInfo, characterBlockList.IndexOf(block), false, true));
                 }
 
                 // terminate block lookup
-                resultTextSource += "};\r\n\r\n";
+                resultTextSource += "};" + nl + nl;
             }
         }
 
@@ -1372,7 +1372,7 @@ namespace TheDotFactory
             if (m_outputConfig.commentVariableName)
             {
                 // add source header
-                resultTextSource += String.Format("{0}Character bitmaps for {1} {2}pt{3}\r\n",
+                resultTextSource += String.Format("{0}Character bitmaps for {1} {2}pt{3}" + nl,
                                                     m_commentStartString, fontInfo.font.Name,
                                                     Math.Round(fontInfo.font.Size), m_commentEndString);
             }
@@ -1381,10 +1381,10 @@ namespace TheDotFactory
             string charBitmapVarName = String.Format(m_outputConfig.varNfBitmaps, getFontName(ref fontInfo.font)) + "[]";
 
             // header var
-            resultTextHeader += String.Format("extern {0};\r\n", charBitmapVarName);
+            resultTextHeader += String.Format("extern {0};" + nl, charBitmapVarName);
 
             // source var
-            resultTextSource += String.Format("{0} = \r\n{{\r\n", charBitmapVarName);
+            resultTextSource += String.Format("{0} = " + nl+"{{" + nl, charBitmapVarName);
 
             // iterate through letters
             for (int charIdx = 0; charIdx < fontInfo.characters.Length; ++charIdx)
@@ -1396,7 +1396,7 @@ namespace TheDotFactory
                 if (m_outputConfig.commentCharDescriptor)
                 {
                     // output character header
-                    resultTextSource += String.Format("\t{0}@{1} '{2}' ({3} pixels wide){4}\r\n",
+                    resultTextSource += String.Format("\t{0}@{1} '{2}' ({3} pixels wide){4}" + nl,
                                                         m_commentStartString,
                                                         fontInfo.characters[charIdx].offsetInBytes,
                                                         fontInfo.characters[charIdx].character,
@@ -1415,12 +1415,12 @@ namespace TheDotFactory
                 if (charIdx != fontInfo.characters.Length - 1 && m_outputConfig.commentCharDescriptor)
                 {
                     // space between chars
-                    resultTextSource += "\r\n";
+                    resultTextSource += nl;
                 }
             }
 
             // space out
-            resultTextSource += "};\r\n\r\n";
+            resultTextSource += "};" + nl + nl;
 
             //
             // Charater descriptor
@@ -1440,7 +1440,7 @@ namespace TheDotFactory
             if (m_outputConfig.commentVariableName)
             {
                 // result string
-                resultTextSource += String.Format("{0}Font information for {1} {2}pt{3}\r\n",
+                resultTextSource += String.Format("{0}Font information for {1} {2}pt{3}" + nl,
                                                     m_commentStartString,
                                                     fontInfo.font.Name, Math.Round(fontInfo.font.Size),
                                                     m_commentEndString);
@@ -1450,7 +1450,7 @@ namespace TheDotFactory
             string fontInfoVarName = String.Format(m_outputConfig.varNfFontInfo, getFontName(ref fontInfo.font));
 
             // add character array for header
-            resultTextHeader += String.Format("extern {0};\r\n", fontInfoVarName);
+            resultTextHeader += String.Format("extern {0};" + nl, fontInfoVarName);
 
             // the font character height
             string fontCharHeightString = "", spaceCharacterPixelWidthString = "";
@@ -1459,7 +1459,7 @@ namespace TheDotFactory
             if (m_outputConfig.descFontHeight != OutputConfiguration.DescriptorFormat.DontDisplay)
             {
                 // convert the value
-                fontCharHeightString = String.Format("\t{0}, {1} Character height{2}\r\n",
+                fontCharHeightString = String.Format("\t{0}, {1} Character height{2}" + nl,
                                               convertValueByDescriptorFormat(m_outputConfig.descFontHeight, fontInfo.charHeight),
                                               m_commentStartString,
                                               m_commentEndString);
@@ -1469,21 +1469,21 @@ namespace TheDotFactory
             if (!m_outputConfig.generateSpaceCharacterBitmap)
             {
                 // convert the value
-                spaceCharacterPixelWidthString = String.Format("\t{0}, {1} Width, in pixels, of space character{2}\r\n",
+                spaceCharacterPixelWidthString = String.Format("\t{0}, {1} Width, in pixels, of space character{2}" + nl,
                                                                 m_outputConfig.spaceGenerationPixels,
                                                                 m_commentStartString,
                                                                 m_commentEndString);
             }
 
             // font info
-            resultTextSource += String.Format("{2} =\r\n{{\r\n" +
+            resultTextSource += String.Format("{2} =" + nl+"{{" + nl +
                                               "{3}" +
-                                              "\t{4}, {0} Start character{1}\r\n" +
-                                              "\t{5}, {0} End character{1}\r\n" +
+                                              "\t{4}, {0} Start character{1}" + nl +
+                                              "\t{5}, {0} End character{1}" + nl +
                                               "{6}" +
                                               "{7}" +
-                                              "\t{8}, {0} Character bitmap array{1}\r\n" +
-                                              "}};\r\n",
+                                              "\t{8}, {0} Character bitmap array{1}" + nl +
+                                              "}};" + nl,
                                               m_commentStartString,
                                               m_commentEndString,
                                               fontInfoVarName,
@@ -1498,12 +1498,12 @@ namespace TheDotFactory
             if (blockLookupGenerated)
             {
                 // add block lookup to header
-                resultTextHeader += String.Format("extern const FONT_CHAR_INFO_LOOKUP {0}[];\r\n", getCharacterDescriptorArrayLookupDisplayString(fontInfo));
+                resultTextHeader += String.Format("extern const FONT_CHAR_INFO_LOOKUP {0}[];" + nl, getCharacterDescriptorArrayLookupDisplayString(fontInfo));
             }
             else
             {
                 // add block lookup to header
-                resultTextHeader += String.Format("extern {0}[];\r\n", String.Format(m_outputConfig.varNfCharInfo, getFontName(ref fontInfo.font)));
+                resultTextHeader += String.Format("extern {0}[];" + nl, String.Format(m_outputConfig.varNfCharInfo, getFontName(ref fontInfo.font)));
             }
         }
     
@@ -1516,19 +1516,19 @@ namespace TheDotFactory
             if (m_outputConfig.generateLookupBlocks)
             {
                 // add to string
-                descriptorString += String.Format("\t{0}, {1} Character block lookup{2}\r\n",
+                descriptorString += String.Format("\t{0}, {1} Character block lookup{2}" + nl,
                                                     blockLookupGenerated ? getCharacterDescriptorArrayLookupDisplayString(fontInfo) : "NULL", 
                                                     m_commentStartString, m_commentEndString);
 
                 // add to string
-                descriptorString += String.Format("\t{0}, {1} Character descriptor array{2}\r\n",
+                descriptorString += String.Format("\t{0}, {1} Character descriptor array{2}" + nl,
                                                     blockLookupGenerated ? "NULL" : getVariableNameFromExpression(String.Format(m_outputConfig.varNfCharInfo, getFontName(ref fontInfo.font))),
                                                     m_commentStartString, m_commentEndString);
             }
             else
             {
                 // add descriptor array
-                descriptorString += String.Format("\t{0}, {1} Character descriptor array{2}\r\n", 
+                descriptorString += String.Format("\t{0}, {1} Character descriptor array{2}" + nl, 
                                                     getVariableNameFromExpression(String.Format(m_outputConfig.varNfCharInfo, getFontName(ref fontInfo.font))), 
                                                     m_commentStartString, m_commentEndString);
             }
@@ -1536,6 +1536,7 @@ namespace TheDotFactory
             // return the string
             return descriptorString;
         }
+		
 
         // generate the required output for text
         private void generateOutputForFont(Font font, ref string resultTextSource, ref string resultTextHeader)
@@ -1547,12 +1548,12 @@ namespace TheDotFactory
             if (m_outputConfig.commentVariableName)
             {
                 // add source file header
-                resultTextSource += String.Format("{0}\r\n{1} Font data for {2} {3}pt\r\n{4}\r\n\r\n",
+                resultTextSource += String.Format("{0}" + nl+"{1} Font data for {2} {3}pt" + nl+"{4}" + nl + nl,
                                                     m_commentStartString, m_commentBlockMiddleString, font.Name, Math.Round(font.Size),
                                                     m_commentBlockEndString);
 
                 // add header file header
-                resultTextHeader += String.Format("{0}Font data for {1} {2}pt{3}\r\n",
+                resultTextHeader += String.Format("{0}Font data for {1} {2}pt{3}" + nl,
                                                     m_commentStartString, font.Name, Math.Round(font.Size),
                                                     m_commentEndString);
             }
@@ -1605,12 +1606,12 @@ namespace TheDotFactory
                 if (m_outputConfig.commentVariableName)
                 {
                     // add source file header
-                    resultTextSource += String.Format("{0}\r\n{1} Image data for {2}\r\n{3}\r\n\r\n",
+                    resultTextSource += String.Format("{0}" + nl+"{1} Image data for {2}" + nl+"{3}" + nl + nl,
                                                         m_commentStartString, m_commentBlockMiddleString, imageName,
                                                         m_commentBlockEndString);
 
                     // add header file header
-                    resultTextHeader += String.Format("{0}Bitmap info for {1}{2}\r\n",
+                    resultTextHeader += String.Format("{0}Bitmap info for {1}{2}" + nl,
                                                         m_commentStartString, imageName,
                                                         m_commentEndString);
                 }
@@ -1619,10 +1620,10 @@ namespace TheDotFactory
                 string dataVarName = String.Format(m_outputConfig.varNfBitmaps, imageName);
 
                 // add to header
-                resultTextHeader += String.Format("extern {0};\r\n", dataVarName);
+                resultTextHeader += String.Format("extern {0};" + nl, dataVarName);
 
                 // add header
-                resultTextSource += String.Format("{0} =\r\n{{\r\n", dataVarName);
+                resultTextSource += String.Format("{0} =" + nl+"{{" + nl, dataVarName);
 
                 //
                 // Bitmap to string
@@ -1641,13 +1642,13 @@ namespace TheDotFactory
                 resultTextSource += generateStringFromPageArray(pages, pagesPerRow);
 
                 // close
-                resultTextSource += String.Format("}};\r\n\r\n");
+                resultTextSource += String.Format("}};" + nl + nl);
 
                 // according to config
                 if (m_outputConfig.commentVariableName)
                 {
                     // set sizes comment
-                    resultTextSource += String.Format("{0}Bitmap sizes for {1}{2}\r\n",
+                    resultTextSource += String.Format("{0}Bitmap sizes for {1}{2}" + nl,
                                                         m_commentStartString, imageName, m_commentEndString);
                 }
 
@@ -1659,28 +1660,28 @@ namespace TheDotFactory
                 if (m_outputConfig.descImgWidth == OutputConfiguration.DescriptorFormat.DisplayInBytes)
                 {
                     // in pages
-                    resultTextSource += String.Format("{0}Pages = {1};\r\n", widthVarName, pagesPerRow);
-                    resultTextHeader += String.Format("extern {0}Pages;\r\n", widthVarName);
+                    resultTextSource += String.Format("{0}Pages = {1};" + nl, widthVarName, pagesPerRow);
+                    resultTextHeader += String.Format("extern {0}Pages;" + nl, widthVarName);
                 }
                 else
                 {
                     // in pixels
-                    resultTextSource += String.Format("{0}Pixels = {1};\r\n", widthVarName, bitmapManipulated.Width);
-                    resultTextHeader += String.Format("extern {0}Pixels;\r\n", widthVarName);
+                    resultTextSource += String.Format("{0}Pixels = {1};" + nl, widthVarName, bitmapManipulated.Width);
+                    resultTextHeader += String.Format("extern {0}Pixels;" + nl, widthVarName);
                 }
 
                 // display height in bytes?
                 if (m_outputConfig.descImgHeight == OutputConfiguration.DescriptorFormat.DisplayInBytes)
                 {
                     // in pages
-                    resultTextSource += String.Format("{0}Pages = {1};\r\n", heightVarName, convertValueByDescriptorFormat(OutputConfiguration.DescriptorFormat.DisplayInBytes, bitmapManipulated.Height));
-                    resultTextHeader += String.Format("extern {0}Pages;\r\n", heightVarName);
+                    resultTextSource += String.Format("{0}Pages = {1};" + nl, heightVarName, convertValueByDescriptorFormat(OutputConfiguration.DescriptorFormat.DisplayInBytes, bitmapManipulated.Height));
+                    resultTextHeader += String.Format("extern {0}Pages;" + nl, heightVarName);
                 }
                 else
                 {
                     // in pixels
-                    resultTextSource += String.Format("{0}Pixels = {1};\r\n", heightVarName, bitmapManipulated.Height);
-                    resultTextHeader += String.Format("extern {0}Pixels;\r\n", heightVarName);
+                    resultTextSource += String.Format("{0}Pixels = {1};"+nl, heightVarName, bitmapManipulated.Height);
+                    resultTextHeader += String.Format("extern {0}Pixels;"+nl, heightVarName);
                 }
             }
         }
@@ -1743,9 +1744,7 @@ namespace TheDotFactory
             // clear the current text
             outputTextBox.Text = "";
             
-            // split output string
-            Regex r = new Regex("\\n");
-            String [] lines = r.Split(outputString);
+            String [] lines = outputString.Split(new string[] {nl}, StringSplitOptions.None);
 
             // for now don't syntax color for more than 2000 lines
             if (lines.Length > 1500)
@@ -1755,18 +1754,22 @@ namespace TheDotFactory
                 return;
             }
 
+            Font fRegular = new Font("Courier New", 10, FontStyle.Regular);
+            Font fBold = new Font("Courier New", 10, FontStyle.Bold);
+            String[] keywords = { "uint_8", "const", "extern", "char", "unsigned", "int", "short", "long" };
+            Regex re = new Regex(@"([ \t{}();])");
+
             // iterate over the richtext box and color it
             foreach (string line in lines)
             {
-                r = new Regex("([ \\t{}();])");
-                String[] tokens = r.Split(line);
+                String[] tokens = re.Split(line);
 
                 // for each found token
                 foreach (string token in tokens)
                 {
                     // Set the token's default color and font.
                     outputTextBox.SelectionColor = Color.Black;
-                    outputTextBox.SelectionFont = new Font("Courier New", 10, FontStyle.Regular);
+                    outputTextBox.SelectionFont = fRegular;
 
                     // Check for a comment.
                     if (token == "//" || token.StartsWith("//"))
@@ -1775,7 +1778,7 @@ namespace TheDotFactory
                         int index = line.IndexOf("//");
                         string comment = line.Substring(index, line.Length - index);
                         outputTextBox.SelectionColor = Color.Green;
-                        outputTextBox.SelectionFont = new Font("Courier New", 10, FontStyle.Regular);
+                        outputTextBox.SelectionFont = fRegular;
                         outputTextBox.SelectedText = comment;
                         break;
                     }
@@ -1787,7 +1790,7 @@ namespace TheDotFactory
                         int index = line.IndexOf("/*");
                         string comment = line.Substring(index, line.Length - index);
                         outputTextBox.SelectionColor = Color.Green;
-                        outputTextBox.SelectionFont = new Font("Courier New", 10, FontStyle.Regular);
+                        outputTextBox.SelectionFont = fRegular;
                         outputTextBox.SelectedText = comment;
                         break;
                     }
@@ -1799,7 +1802,7 @@ namespace TheDotFactory
                         int index = line.IndexOf("**");
                         string comment = line.Substring(index, line.Length - index);
                         outputTextBox.SelectionColor = Color.Green;
-                        outputTextBox.SelectionFont = new Font("Courier New", 10, FontStyle.Regular);
+                        outputTextBox.SelectionFont = fRegular;
                         outputTextBox.SelectedText = comment;
                         break;
                     }
@@ -1811,20 +1814,20 @@ namespace TheDotFactory
                         int index = line.IndexOf("*/");
                         string comment = line.Substring(index, line.Length - index);
                         outputTextBox.SelectionColor = Color.Green;
-                        outputTextBox.SelectionFont = new Font("Courier New", 10, FontStyle.Regular);
+                        outputTextBox.SelectionFont = fRegular;
                         outputTextBox.SelectedText = comment;
                         break;
                     }
 
                     // Check whether the token is a keyword. 
-                    String[] keywords = { "uint_8", "const", "extern", "char", "unsigned", "int", "short", "long" };
+                    
                     for (int i = 0; i < keywords.Length; i++)
                     {
                         if (keywords[i] == token)
                         {
                             // Apply alternative color and font to highlight keyword.
                             outputTextBox.SelectionColor = Color.Blue;
-                            outputTextBox.SelectionFont = new Font("Courier New", 10, FontStyle.Bold);
+                            outputTextBox.SelectionFont = fBold;
                             break;
                         }
                     }
@@ -1832,6 +1835,7 @@ namespace TheDotFactory
                     // set the token text
                     outputTextBox.SelectedText = token;
                 }
+                outputTextBox.SelectedText = nl;
             }
         }
 
