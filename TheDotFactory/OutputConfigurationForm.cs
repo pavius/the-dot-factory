@@ -28,6 +28,7 @@ namespace TheDotFactory
             cbxPaddingHoriz.DataSource = Enum.GetNames(typeof(OutputConfiguration.PaddingRemoval));
             cbxPaddingVert.DataSource = Enum.GetNames(typeof(OutputConfiguration.PaddingRemoval));
             cbxCommentStyle.DataSource = Enum.GetNames(typeof(OutputConfiguration.CommentStyle));
+            cbxBitLayout.DataSource = Enum.GetNames(typeof(OutputConfiguration.BitLayout));
             cbxByteOrder.DataSource = Enum.GetNames(typeof(OutputConfiguration.ByteOrder));
             cbxByteFormat.DataSource = Enum.GetNames(typeof(OutputConfiguration.ByteFormat));
             
@@ -57,6 +58,7 @@ namespace TheDotFactory
             cbxPaddingHoriz.SelectedIndex = (int)outputConfig.paddingRemovalHorizontal;
             cbxPaddingVert.SelectedIndex = (int)outputConfig.paddingRemovalVertical;
             cbxCommentStyle.SelectedIndex = (int)outputConfig.commentStyle;
+            cbxBitLayout.SelectedIndex = (int)outputConfig.bitLayout;
             cbxByteOrder.SelectedIndex = (int)outputConfig.byteOrder;
             cbxByteFormat.SelectedIndex = (int)outputConfig.byteFormat;
             cbxRotation.SelectedIndex = (int)outputConfig.rotation;
@@ -105,6 +107,7 @@ namespace TheDotFactory
             outputConfig.paddingRemovalHorizontal = (OutputConfiguration.PaddingRemoval)Enum.Parse(typeof(OutputConfiguration.PaddingRemoval), cbxPaddingHoriz.Text);
             outputConfig.paddingRemovalVertical = (OutputConfiguration.PaddingRemoval)Enum.Parse(typeof(OutputConfiguration.PaddingRemoval), cbxPaddingVert.Text);
             outputConfig.commentStyle = (OutputConfiguration.CommentStyle)Enum.Parse(typeof(OutputConfiguration.CommentStyle), cbxCommentStyle.Text);
+            outputConfig.bitLayout = (OutputConfiguration.BitLayout)Enum.Parse(typeof(OutputConfiguration.BitLayout), cbxBitLayout.Text);
             outputConfig.byteOrder = (OutputConfiguration.ByteOrder)Enum.Parse(typeof(OutputConfiguration.ByteOrder), cbxByteOrder.Text);
             outputConfig.byteFormat = (OutputConfiguration.ByteFormat)Enum.Parse(typeof(OutputConfiguration.ByteFormat), cbxByteFormat.Text);
             outputConfig.rotation = (OutputConfiguration.Rotation)Array.IndexOf(OutputConfiguration.RotationDisplayString, cbxRotation.Text);
