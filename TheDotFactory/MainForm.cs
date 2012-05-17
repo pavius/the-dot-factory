@@ -36,7 +36,7 @@ namespace TheDotFactory
         private static String nl = Environment.NewLine;
 
         // application version
-        public const string ApplicationVersion = "0.1.2";
+        public const string ApplicationVersion = "0.1.3";
 
         // current loaded bitmap
         private Bitmap m_currentLoadedBitmap = null;
@@ -1031,17 +1031,18 @@ namespace TheDotFactory
                 for (int col = 0; col != width; ++col)
                 {
                     // get the byte containing the bit we want
-                    int page = (byte)rowMajorPages[row * rowMajorPagesPerRow + (col/8)];
+                    int srcIdx = row * rowMajorPagesPerRow + (col/8);
+                    int page = (byte)rowMajorPages[srcIdx];
 
                     // get the bit mask for the bit we want
-                    int bitMask = 0x80 >> (col % 8);
+                    int bitMask = getBitMask(7 - (col % 8));
 
                     // set the bit in the column major data
                     if ((page & bitMask) != 0)
                     {
-                        int idx = (row/8) * colMajorPagesPerRow + col;
-                        int p = (byte)colMajorPages[idx];
-                        colMajorPages[idx] = (byte)(p | (1 << (row % 8)));
+                        int dstIdx = (row/8) * colMajorPagesPerRow + col;
+                        int p = (byte)colMajorPages[dstIdx];
+                        colMajorPages[dstIdx] = (byte)(p | getBitMask(row % 8));
                     }
                 }
             }
@@ -1111,8 +1112,8 @@ namespace TheDotFactory
 
                     // make a mask to extract the bit we want
                     int bitMask = (layout == OutputConfiguration.BitLayout.RowMajor)
-                        ? 0x80 >> (col % 8)
-                        : 1 << (row % 8);
+                        ? getBitMask(7 - (col % 8))
+                        : getBitMask(row % 8);
 
                     // check if bit is set
                     visualizer[row] += (bitMask & page) != 0 ? m_outputConfig.bmpVisualizerChar : " ";
@@ -1122,6 +1123,16 @@ namespace TheDotFactory
             // for debugging
             //foreach (var s in visualizer)
             //  System.Diagnostics.Debug.WriteLine(s);
+        }
+
+        // return a bitMask to pick out the 'bitIndex'th bit allowing for byteOrder
+        // MsbFirst: bitIndex = 0 = 0x01, bitIndex = 7 = 0x80
+        // LsbFirst: bitIndex = 0 = 0x80, bitIndex = 7 = 0x01
+        private int getBitMask(int bitIndex)
+        {
+            return m_outputConfig.byteOrder == OutputConfiguration.ByteOrder.MsbFirst
+                ? 0x01 << bitIndex
+                : 0x80 >> bitIndex;
         }
 
         // get the font name and format it
