@@ -716,6 +716,12 @@ namespace TheDotFactory
                 // if we have bits left, add it as is
                 if (bitsRead != 0) pages.Add(currentValue);
             }
+
+            // transpose the pages if column major data is requested
+            if (m_outputConfig.bitLayout == OutputConfiguration.BitLayout.ColumnMajor)
+            {
+                transposePageArray(bitmapToGenerate.Width, bitmapToGenerate.Height, pages, out pages);
+            }
         }
 
         // get absolute height/width of characters
@@ -926,24 +932,8 @@ namespace TheDotFactory
         }
 
         // generate string from character info
-        private string generateStringFromPageArray(int width, int height, ArrayList rowMajorPages)
+        private string generateStringFromPageArray(int width, int height, ArrayList pages)
         {
-            // get a collection of pages with the requested bit layout
-            ArrayList pages;
-            if (m_outputConfig.bitLayout == OutputConfiguration.BitLayout.RowMajor)
-            {
-                pages = rowMajorPages;
-            }
-            else if (m_outputConfig.bitLayout == OutputConfiguration.BitLayout.ColumnMajor)
-            {
-                transposePageArray(width, height, rowMajorPages, out pages);
-            }
-            else
-            {
-                System.Diagnostics.Debug.Assert(false, "Unknown bit layout");
-                return "";
-            }
-
             // generate the data rows
             string [] data;
             generateData(width, height, pages, m_outputConfig.bitLayout, out data);
@@ -1544,10 +1534,6 @@ namespace TheDotFactory
                                                         fontInfo.characters[charIdx].width,
                                                         m_commentEndString);
                 }
-
-                // get pages per row
-                int pagesPerRow = fontInfo.characters[charIdx].bitmapToGenerate.Width / 8;
-                if (fontInfo.characters[charIdx].bitmapToGenerate.Width % 8 != 0) pagesPerRow++;
 
                 // now add letter array
                 var charInfo = fontInfo.characters[charIdx];
