@@ -140,6 +140,12 @@ namespace TheDotFactory
         public MainForm()
         {
             InitializeComponent();
+
+            // set UI properties that the designer does not set correctly
+            // designer sets MinSize values before initializing the splitter distance which causes an exception
+            splitContainer1.SplitterDistance = 340;
+            splitContainer1.Panel1MinSize = 287;
+            splitContainer1.Panel2MinSize = 260;
         }
 
         // update input font
