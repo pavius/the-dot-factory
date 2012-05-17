@@ -1020,15 +1020,13 @@ namespace TheDotFactory
         private void transposePageArray(int width, int height, ArrayList rowMajorPages, out ArrayList colMajorPages)
         {
             // column major data has a byte for each column representing 8 rows
-            // 'pagesPerCol' is the number of pages needed per column
-            //int pagesPerCol = (height + 7) / 8;
-            //int pagesPerRow = rowMajorPages.Count / height;
             int rowMajorPagesPerRow = (width + 7)/8;
             int colMajorPagesPerRow = width;
+            int colMajorRowCount    = (height + 7)/8;
 
             // create an array of pages filled with zeros for the column major data
-            colMajorPages = new ArrayList(rowMajorPages.Count);
-            for (int i = 0; i != rowMajorPages.Count; ++i)
+            colMajorPages = new ArrayList(colMajorPagesPerRow * colMajorRowCount);
+            for (int i = 0; i != colMajorPagesPerRow * colMajorRowCount; ++i)
                 colMajorPages.Add((byte)0);
 
             // generate the column major data
@@ -1100,7 +1098,8 @@ namespace TheDotFactory
             visualizer = new string[height];
 
             // the number of pages per row in 'pages'
-            int pagesPerRow = (layout == OutputConfiguration.BitLayout.RowMajor) ? (width + 7)/8 : width;
+            int colCount = (layout == OutputConfiguration.BitLayout.RowMajor) ? (width + 7)/8: width;
+            int rowCount = (layout == OutputConfiguration.BitLayout.RowMajor) ? height : (height + 7)/8;
 
             // iterator over rows
             for (int row = 0; row != height; ++row)
@@ -1113,8 +1112,8 @@ namespace TheDotFactory
                 {
                     // get the byte containing the bit we want
                     int page = (layout == OutputConfiguration.BitLayout.RowMajor)
-                        ? (byte)pages[row * pagesPerRow + (col/8)]
-                        : (byte)pages[(row/8) * pagesPerRow + col];
+                        ? (byte)pages[row * colCount + (col/8)]
+                        : (byte)pages[(row/8) * colCount + col];
 
                     // make a mask to extract the bit we want
                     int bitMask = (layout == OutputConfiguration.BitLayout.RowMajor)
