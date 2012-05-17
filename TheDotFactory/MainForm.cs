@@ -919,84 +919,209 @@ namespace TheDotFactory
             return fontInfo;
         }
 
-        // convert a page to string according to the output format
-        private string convertPageToString(byte page, ref string charVisualizer)
+        // generate string from character info
+        private string generateStringFromPageArray(int width, int height, ArrayList rowMajorPages)
         {
-            // add leading character
-            string resultString = m_outputConfig.byteLeadingString;
-            
-            // check format
-            if (m_outputConfig.byteFormat == OutputConfiguration.ByteFormat.Hex)
+            // get a collection of pages with the requested bit layout
+            ArrayList pages;
+            if (m_outputConfig.bitLayout == OutputConfiguration.BitLayout.RowMajor)
             {
-                // convert byte to hex
-                resultString += page.ToString("X").PadLeft(2, '0');
+                pages = rowMajorPages;
+            }
+            else if (m_outputConfig.bitLayout == OutputConfiguration.BitLayout.ColumnMajor)
+            {
+                transposePageArray(width, height, rowMajorPages, out pages);
             }
             else
             {
-                // convert byte to binary
-                resultString += Convert.ToString(page, 2).PadLeft(8, '0');
+                System.Diagnostics.Debug.Assert(false, "Unknown bit layout");
+                return "";
             }
 
-            // iterate through bits, left to right, and visualize
-            for (int bitMask = 0x80; bitMask != 0; bitMask >>= 1)
+            // generate the data rows
+            string [] data;
+            generateData(width, height, pages, m_outputConfig.bitLayout, out data);
+
+            // generate the visualizer
+            string[] visualizer;
+            generateVisualizer(width, height, pages, m_outputConfig.bitLayout, out visualizer);
+
+            // build the result string
+            StringBuilder resultString = new StringBuilder();
+
+            // output row major data
+            if (m_outputConfig.bitLayout == OutputConfiguration.BitLayout.RowMajor)
             {
-                // check if bit is set
-                if ((bitMask & page) != 0) charVisualizer += m_outputConfig.bmpVisualizerChar;
-                else charVisualizer += " ";
-            }
-            
-            // add comma
-            resultString += ", ";
-            
-            // return the result
-            return resultString;
-        }
+                // the visualizer is drawn after the data on the same rows, so they must have the same length
+                System.Diagnostics.Debug.Assert(data.Length == visualizer.Length);
 
-        // generate string from character info
-        private string generateStringFromPageArray(ArrayList pages, int pagesPerRow)
-        {
-            // result string
-            string resultString = "\t";
-
-            // the trailing visualizer string
-            string trailingCharVisualizer = "";
-
-            // iterate through pages
-            for (int charIdx = 1; charIdx <= pages.Count; ++charIdx)
-            {
-                // convert the page to string
-                resultString += convertPageToString((byte)pages[charIdx - 1], ref trailingCharVisualizer);
-
-                // check if newline is required
-                if (m_outputConfig.lineWrap == OutputConfiguration.LineWrap.AtColumn &&
-                    (charIdx % pagesPerRow) == 0)
+                // output the data and visualizer together
+                if (m_outputConfig.lineWrap == OutputConfiguration.LineWrap.AtColumn)
                 {
-                    // generate trailing char visualizer if required
-                    if (m_outputConfig.commentCharVisualizer)
+                    // one line per row
+                    for (int row = 0; row != data.Length; ++row)
                     {
-                        // add to result string
-                        resultString += String.Format("{0}{1}{2}", 
-                                                        m_commentStartString,
-                                                        trailingCharVisualizer,
-                                                        m_commentEndString);
-
-                        // zero out trailing string
-                        trailingCharVisualizer = "";
+                        resultString.Append("\t").Append(data[row]).Append(visualizer[row]).Append(nl);
                     }
-                    
-                    // add newline
-                    resultString += nl;
-
-                    // if not last, add tab
-                    if (charIdx != pages.Count) resultString += "\t";
+                }
+                else if (m_outputConfig.lineWrap == OutputConfiguration.LineWrap.AtBitmap)
+                {
+                    // one line per bitmap
+                    resultString.Append("\t");
+                    for (int row = 0; row != data.Length; ++row)
+                    {
+                        resultString.Append(data[row]);
+                    }
+                    resultString.Append(nl);
                 }
             }
 
-            // add newline if per bitmap
-            if (m_outputConfig.lineWrap == OutputConfiguration.LineWrap.AtBitmap) resultString += nl;
+            // output column major data
+            else if (m_outputConfig.bitLayout == OutputConfiguration.BitLayout.ColumnMajor)
+            {
+                // output the visualizer
+                for (int row = 0; row != visualizer.Length; ++row)
+                {
+                    resultString.Append("\t").Append(visualizer[row]).Append(nl);
+                }
+
+                // output the data
+                if (m_outputConfig.lineWrap == OutputConfiguration.LineWrap.AtColumn)
+                {
+                    // one line per row
+                    for (int row = 0; row != data.Length; ++row)
+                    {
+                        resultString.Append("\t").Append(data[row]).Append(nl);
+                    }
+                }
+                else if (m_outputConfig.lineWrap == OutputConfiguration.LineWrap.AtBitmap)
+                {
+                    // one line per bitmap
+                    resultString.Append("\t");
+                    for (int row = 0; row != data.Length; ++row)
+                    {
+                        resultString.Append(data[row]);
+                    }
+                    resultString.Append(nl);
+                }
+            }
 
             // return the result
-            return resultString;
+            return resultString.ToString();
+        }
+
+        // generate an array of column major pages from row major pages
+        private void transposePageArray(int width, int height, ArrayList rowMajorPages, out ArrayList colMajorPages)
+        {
+            // column major data has a byte for each column representing 8 rows
+            // 'pagesPerCol' is the number of pages needed per column
+            //int pagesPerCol = (height + 7) / 8;
+            //int pagesPerRow = rowMajorPages.Count / height;
+            int rowMajorPagesPerRow = (width + 7)/8;
+            int colMajorPagesPerRow = width;
+
+            // create an array of pages filled with zeros for the column major data
+            colMajorPages = new ArrayList(rowMajorPages.Count);
+            for (int i = 0; i != rowMajorPages.Count; ++i)
+                colMajorPages.Add((byte)0);
+
+            // generate the column major data
+            for (int row = 0; row != height; ++row)
+            {
+                for (int col = 0; col != width; ++col)
+                {
+                    // get the byte containing the bit we want
+                    int page = (byte)rowMajorPages[row * rowMajorPagesPerRow + (col/8)];
+
+                    // get the bit mask for the bit we want
+                    int bitMask = 0x80 >> (col % 8);
+
+                    // set the bit in the column major data
+                    if ((page & bitMask) != 0)
+                    {
+                        int idx = (row/8) * colMajorPagesPerRow + col;
+                        int p = (byte)colMajorPages[idx];
+                        colMajorPages[idx] = (byte)(p | (1 << (row % 8)));
+                    }
+                }
+            }
+        }
+
+        // builds a string array of the data in 'pages'
+        private void generateData(int width, int height, ArrayList pages, OutputConfiguration.BitLayout layout, out string[] data)
+        {
+            int colCount = (layout == OutputConfiguration.BitLayout.RowMajor) ? (width + 7)/8: width;
+            int rowCount = (layout == OutputConfiguration.BitLayout.RowMajor) ? height : (height + 7)/8;
+
+            data = new string[rowCount];
+
+            // iterator over rows
+            for (int row = 0; row != rowCount; ++row)
+            {
+                data[row] = "";
+
+                // iterator over columns
+                for (int col = 0; col != colCount; ++col)
+                {
+                    // get the byte to output
+                    int page = (byte)pages[row * colCount + col];
+
+                    // add leading character
+                    data[row] += m_outputConfig.byteLeadingString;
+
+                    // check format
+                    if (m_outputConfig.byteFormat == OutputConfiguration.ByteFormat.Hex)
+                    {
+                        // convert byte to hex
+                        data[row] += page.ToString("X").PadLeft(2, '0');
+                    }
+                    else
+                    {
+                        // convert byte to binary
+                        data[row] += Convert.ToString(page, 2).PadLeft(8, '0');
+                    }
+
+                    // add comma
+                    data[row] += ", ";
+                }
+            }
+        }
+
+        // builds a string array visualization of 'pages'
+        private void generateVisualizer(int width, int height, ArrayList pages, OutputConfiguration.BitLayout layout, out string[] visualizer)
+        {
+            visualizer = new string[height];
+
+            // the number of pages per row in 'pages'
+            int pagesPerRow = (layout == OutputConfiguration.BitLayout.RowMajor) ? (width + 7)/8 : width;
+
+            // iterator over rows
+            for (int row = 0; row != height; ++row)
+            {
+                // each row is started with a line comment
+                visualizer[row] = "// ";
+                
+                // iterator over columns
+                for (int col = 0; col != width; ++col)
+                {
+                    // get the byte containing the bit we want
+                    int page = (layout == OutputConfiguration.BitLayout.RowMajor)
+                        ? (byte)pages[row * pagesPerRow + (col/8)]
+                        : (byte)pages[(row/8) * pagesPerRow + col];
+
+                    // make a mask to extract the bit we want
+                    int bitMask = (layout == OutputConfiguration.BitLayout.RowMajor)
+                        ? 0x80 >> (col % 8)
+                        : 1 << (row % 8);
+
+                    // check if bit is set
+                    visualizer[row] += (bitMask & page) != 0 ? m_outputConfig.bmpVisualizerChar : " ";
+                }
+            }
+
+            // for debugging
+            //foreach (var s in visualizer)
+            //  System.Diagnostics.Debug.WriteLine(s);
         }
 
         // get the font name and format it
@@ -1409,7 +1534,8 @@ namespace TheDotFactory
                 if (fontInfo.characters[charIdx].bitmapToGenerate.Width % 8 != 0) pagesPerRow++;
 
                 // now add letter array
-                resultTextSource += generateStringFromPageArray(fontInfo.characters[charIdx].pages, pagesPerRow);
+                var charInfo = fontInfo.characters[charIdx];
+                resultTextSource += generateStringFromPageArray(charInfo.width, charInfo.height, charInfo.pages);
 
                 // space out
                 if (charIdx != fontInfo.characters.Length - 1 && m_outputConfig.commentCharDescriptor)
@@ -1639,7 +1765,7 @@ namespace TheDotFactory
                 int pagesPerRow = convertValueByDescriptorFormat(OutputConfiguration.DescriptorFormat.DisplayInBytes, bitmapManipulated.Width);
 
                 // now convert to string
-                resultTextSource += generateStringFromPageArray(pages, pagesPerRow);
+                resultTextSource += generateStringFromPageArray(bitmapManipulated.Width, bitmapManipulated.Height, pages);
 
                 // close
                 resultTextSource += String.Format("}};" + nl + nl);
