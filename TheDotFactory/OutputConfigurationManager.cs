@@ -40,6 +40,13 @@ namespace TheDotFactory
             Cpp              // C++ style - //
         }
 
+        // Bit Layout
+        public enum BitLayout
+        {
+            RowMajor,     // '|' = 0x80,0x80,0x80  '_' = 0x00,0x00,0xFF
+            ColumnMajor,  // '|' = 0xFF,0x00,0x00  '_' = 0x80,0x80,0x80
+        }
+
         // Byte Order
         public enum ByteOrder
         {
@@ -117,6 +124,7 @@ namespace TheDotFactory
         public LineWrap lineWrap = LineWrap.AtColumn;
 
         // byte
+        public BitLayout bitLayout = BitLayout.RowMajor;
         public ByteOrder byteOrder = ByteOrder.MsbFirst;
         public ByteFormat byteFormat = ByteFormat.Hex;
         public string byteLeadingString = ByteLeadingStringHex;
