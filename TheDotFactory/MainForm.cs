@@ -1130,20 +1130,33 @@ namespace TheDotFactory
                 : 0x80 >> bitIndex;
         }
 
+        // make 'name' suitable as a variable name, starting with '_'
+        // or a letter and containing only letters, digits, and '_'
+        private string scrubVariableName(string name)
+        {
+            // scrub invalid characters from the font name
+            StringBuilder outName = new StringBuilder();
+            foreach (char ch in name)
+            {
+                if (Char.IsLetterOrDigit(ch) || ch == '_')
+                    outName.Append(ch);
+            }
+
+            // prepend '_' if the first character is a number
+            if (Char.IsDigit(outName[0]))
+                outName.Insert(0, '_');
+
+            // convert the first character to lower case
+            outName[0] = Char.ToLower(outName[0]);
+
+            // return name
+            return outName.ToString();
+        }
+
         // get the font name and format it
         private string getFontName(ref Font font)
         {
-            // get font name
-            string fontName = font.Name.Replace(" ", "").Replace("'", "_") + Math.Round(font.Size) + "pt";
-
-            // get first char
-            char firstChar = fontName[0];
-
-            // remove first char
-            fontName = fontName.Substring(1, fontName.Length - 1);
-
-            // return name
-            return Char.ToLower(firstChar) + fontName;
+            return scrubVariableName(font.Name + "_" + Math.Round(font.Size) + "pt");
         }
 
         // convert bits to bytes according to desc format
@@ -1166,7 +1179,7 @@ namespace TheDotFactory
             }
         }
 
-        // get teh character descriptor string
+        // get the character descriptor string
         private string getCharacterDescString(OutputConfiguration.DescriptorFormat descFormat, int valueInBits)
         {
             // don't display
@@ -1698,7 +1711,7 @@ namespace TheDotFactory
         private void generateOutputForImage(ref Bitmap bitmapOriginal, ref string resultTextSource, ref string resultTextHeader)
         {
             // the name of the bitmap
-            string imageName = txtImageName.Text;
+            string imageName = scrubVariableName(txtImageName.Text);
 
             // check if bitmap is assigned
             if (m_currentLoadedBitmap != null)
