@@ -148,6 +148,13 @@ namespace TheDotFactory
             splitContainer1.Panel2MinSize = 260;
         }
 
+        // force a redraw on size changed
+        protected override void OnSizeChanged(EventArgs e)
+        {
+            base.OnSizeChanged(e);
+            Refresh();
+        }
+
         // update input font
         private void updateSelectedFont(Font fnt)
         {
@@ -222,6 +229,9 @@ namespace TheDotFactory
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            // use double buffering
+            DoubleBuffered = true;
+
             // set version
             Text = String.Format("The Dot Factory v.{0}", ApplicationVersion);
 
