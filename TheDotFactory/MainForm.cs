@@ -1560,7 +1560,8 @@ namespace TheDotFactory
 
                 // now add letter array
                 var charInfo = fontInfo.characters[charIdx];
-                resultTextSource += generateStringFromPageArray(charInfo.width, charInfo.height, charInfo.pages);
+                var bitmap = fontInfo.characters[charIdx].bitmapToGenerate;
+                resultTextSource += generateStringFromPageArray(bitmap.Width, bitmap.Height, charInfo.pages);
 
                 // space out
                 if (charIdx != fontInfo.characters.Length - 1 && m_outputConfig.commentCharDescriptor)
