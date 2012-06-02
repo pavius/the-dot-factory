@@ -39,13 +39,25 @@ namespace TheDotFactory
         private void linkIcons_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             // open
-            System.Diagnostics.Process.Start("IExplore", "http://www.famfamfam.com");
+            System.Diagnostics.Process.Start("http://www.famfamfam.com");
         }
 
         private void linkSite_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             // open
-            System.Diagnostics.Process.Start("IExplore", "http://www.pavius.net");
+            System.Diagnostics.Process.Start("http://www.pavius.net");
+        }
+
+        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            // open
+            System.Diagnostics.Process.Start("https://github.com/mru00");
+        }
+
+        private void linkLabel2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            // open
+            System.Diagnostics.Process.Start("https://github.com/psryland");
         }
    }
 }

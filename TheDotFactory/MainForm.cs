@@ -36,7 +36,7 @@ namespace TheDotFactory
         private static String nl = Environment.NewLine;
 
         // application version
-        public const string ApplicationVersion = "0.1.3";
+        public const string ApplicationVersion = "0.1.4";
 
         // current loaded bitmap
         private Bitmap m_currentLoadedBitmap = null;
