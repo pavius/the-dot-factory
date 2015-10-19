@@ -1537,8 +1537,12 @@ namespace TheDotFactory
 
         void GenerateCSharpCharacter(StringBuilder builder, CharacterGenerationInfo charInfo)
             {
+            const string CharsThatMustBeEscaped = @"'\";
             if (charInfo.bitmapToGenerate == null) return; // Skip missing characters
-            builder.AppendLine($"        {{'{charInfo.character}', new BitMappedCharacter");
+            var c = charInfo.character;
+            var escapeRequired = CharsThatMustBeEscaped.Contains(c);
+            var charName = escapeRequired ? @"\" + c : c.ToString();
+            builder.AppendLine($"        {{'{charName}', new BitMappedCharacter");
             builder.AppendLine("            {");
             builder.AppendLine($"            Width = {charInfo.width},");
             builder.AppendLine("            Stripes = new byte[]");

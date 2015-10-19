@@ -902,7 +902,7 @@
             this.CodeGenerationOptions.Controls.Add(this.OutputC);
             this.CodeGenerationOptions.Location = new System.Drawing.Point(19, 50);
             this.CodeGenerationOptions.Name = "CodeGenerationOptions";
-            this.CodeGenerationOptions.Size = new System.Drawing.Size(644, 62);
+            this.CodeGenerationOptions.Size = new System.Drawing.Size(644, 47);
             this.CodeGenerationOptions.TabIndex = 48;
             this.CodeGenerationOptions.TabStop = false;
             this.CodeGenerationOptions.Text = "Code Generation";
@@ -935,7 +935,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(687, 546);
+            this.ClientSize = new System.Drawing.Size(687, 513);
             this.Controls.Add(this.CodeGenerationOptions);
             this.Controls.Add(this.gbxIdentifierNamingOptions);
             this.Controls.Add(this.btnUpdateConfig);

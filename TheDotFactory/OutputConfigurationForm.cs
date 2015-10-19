@@ -431,6 +431,16 @@ namespace TheDotFactory
             gbxByteOrderOptions.Enabled = OutputC.Checked || OutputCSharp.Checked;
             gbxDescriptorOptions.Enabled = OutputC.Checked;
             gbxIdentifierNamingOptions.Enabled = OutputC.Checked;
+            cbxCommentVarName.Enabled = OutputC.Checked;
+            cbxCommentCharDesc.Enabled = OutputC.Checked;
+            cbxCommentCharVisual.Enabled = OutputC.Checked || OutputCSharp.Checked;
+            cbxByteLeadingChar.Enabled = OutputC.Checked;
+            cbxByteFormat.Enabled = OutputC.Checked;
+            if (OutputCSharp.Checked)
+                {
+                cbxByteLeadingChar.SelectedIndex = 1;
+                cbxByteFormat.SelectedIndex = 1;
+                }
             }
     }
 }
