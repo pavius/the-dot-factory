@@ -26,6 +26,12 @@ namespace TheDotFactory
             AtBitmap            // After each bitmap
         }
 
+        public enum CodeGeneration
+            {
+            C,
+            CSharp
+            }
+
         // space generated
         public enum SpaceGeneration
         {
@@ -152,6 +158,9 @@ namespace TheDotFactory
 
         // display name
         public string displayName = "";
+
+        // code generation options
+        public CodeGeneration codeGeneration;
     }
 
     // the output configuration manager
