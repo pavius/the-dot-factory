@@ -95,6 +95,8 @@ namespace TheDotFactory
             // -- wrap          
             rbnLineWrapAtColumn.Checked = (outputConfig.lineWrap == OutputConfiguration.LineWrap.AtColumn);
             rbnLineWrapAtBitmap.Checked = !rbnLineWrapAtColumn.Checked;
+            OutputC.Checked = outputConfig.codeGeneration == OutputConfiguration.CodeGeneration.C;
+            OutputCSharp.Checked = outputConfig.codeGeneration == OutputConfiguration.CodeGeneration.CSharp;
 
             // clear flag
             m_loadingOutputConfigurationToForm = false;
@@ -142,6 +144,7 @@ namespace TheDotFactory
             // -- wrap
             if (rbnLineWrapAtColumn.Checked) outputConfig.lineWrap = OutputConfiguration.LineWrap.AtColumn;
             else outputConfig.lineWrap = OutputConfiguration.LineWrap.AtBitmap;
+            outputConfig.codeGeneration = OutputCSharp.Checked ? OutputConfiguration.CodeGeneration.CSharp : OutputConfiguration.CodeGeneration.C;
         }
 
         private void setControlTooltip(Control control, string tooltipString)
@@ -220,7 +223,7 @@ namespace TheDotFactory
             return 0;
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void ApplyButtonClicked(object sender, EventArgs e)
         {
             // close self
             Close();
@@ -416,5 +419,28 @@ namespace TheDotFactory
         {
 
         }
+
+        private void CodeGenerationRadioButtonCheckedChanged(object sender, EventArgs e)
+            {
+            onOutputConfigurationFormChange(sender, e);
+            gbxFlipRotate.Enabled = OutputC.Checked || OutputCSharp.Checked;
+            gbxPadding.Enabled = OutputC.Checked || OutputCSharp.Checked;
+            gbxLineWrap.Enabled = OutputC.Checked || OutputCSharp.Checked;
+            gbxLineWrap.Enabled = OutputC.Checked || OutputCSharp.Checked;
+            gbxCommentOptions.Enabled = OutputC.Checked || OutputCSharp.Checked;
+            gbxByteOrderOptions.Enabled = OutputC.Checked || OutputCSharp.Checked;
+            gbxDescriptorOptions.Enabled = OutputC.Checked;
+            gbxIdentifierNamingOptions.Enabled = OutputC.Checked;
+            cbxCommentVarName.Enabled = OutputC.Checked;
+            cbxCommentCharDesc.Enabled = OutputC.Checked;
+            cbxCommentCharVisual.Enabled = OutputC.Checked || OutputCSharp.Checked;
+            cbxByteLeadingChar.Enabled = OutputC.Checked;
+            cbxByteFormat.Enabled = OutputC.Checked;
+            if (OutputCSharp.Checked)
+                {
+                cbxByteLeadingChar.SelectedIndex = 1;
+                cbxByteFormat.SelectedIndex = 1;
+                }
+            }
     }
 }
