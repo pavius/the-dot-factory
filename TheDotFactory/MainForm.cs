@@ -184,6 +184,8 @@ namespace TheDotFactory
             // save into settings
             Properties.Settings.Default.InputFont = fnt;
             Properties.Settings.Default.Save();
+
+            generate();
         }
 
         private void btnFontSelect_Click(object sender, EventArgs e)
@@ -1847,7 +1849,11 @@ namespace TheDotFactory
             Properties.Settings.Default.InputText = txtInputText.Text;
             Properties.Settings.Default.Save();
 
-            // will hold the resutl string            
+            generate();
+
+       private void generate(void)
+       {
+            // will hold the resutl string
             string resultStringSource = "";
             string resultStringHeader = "";
 
