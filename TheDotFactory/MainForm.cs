@@ -1525,10 +1525,17 @@ namespace TheDotFactory
             // according to config
             if (m_outputConfig.commentVariableName)
             {
+                string imageDesc = (fontInfo.characters.Length > 0 &&
+                    m_outputConfig.paddingRemovalHorizontal == OutputConfiguration.PaddingRemoval.Fixed &&
+                    m_outputConfig.paddingRemovalVertical == OutputConfiguration.PaddingRemoval.Fixed)
+                    ? String.Format("({1}x{2} pixels)",
+                        m_commentStartString, fontInfo.characters[0].width, fontInfo.characters[0].height)
+                    : string.Empty;
+
                 // add source header
-                resultTextSource += String.Format("{0}Character bitmaps for {1} {2}pt{3}" + nl,
+                resultTextSource += String.Format("{0}Character bitmaps for {1} {2}pt{3} {4}" + nl,
                                                     m_commentStartString, fontInfo.font.Name,
-                                                    Math.Round(fontInfo.font.Size), m_commentEndString);
+                                                    Math.Round(fontInfo.font.Size), m_commentEndString, imageDesc);
             }
 
             // get bitmap name
@@ -1550,11 +1557,12 @@ namespace TheDotFactory
                 if (m_outputConfig.commentCharDescriptor)
                 {
                     // output character header
-                    resultTextSource += String.Format("\t{0}@{1} '{2}' ({3} pixels wide){4}" + nl,
+                    resultTextSource += String.Format("\t{0}@{1} '{2}' ({3}x{4} pixels){5}" + nl,
                                                         m_commentStartString,
                                                         fontInfo.characters[charIdx].offsetInBytes,
                                                         fontInfo.characters[charIdx].character,
                                                         fontInfo.characters[charIdx].width,
+                                                        fontInfo.characters[charIdx].height,
                                                         m_commentEndString);
                 }
 
