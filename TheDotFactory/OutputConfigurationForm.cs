@@ -25,7 +25,8 @@ namespace TheDotFactory
         void populateControls()
         {
             // set datasources
-            cbxPaddingHoriz.DataSource = Enum.GetNames(typeof(OutputConfiguration.PaddingRemoval));
+            cbxPaddingHoriz.DataSource = Enum.GetNames(typeof(OutputConfiguration.PaddingRemoval))
+                .Where(x => x != OutputConfiguration.PaddingRemoval.FixedCompact.ToString()).ToList();
             cbxPaddingVert.DataSource = Enum.GetNames(typeof(OutputConfiguration.PaddingRemoval));
             cbxCommentStyle.DataSource = Enum.GetNames(typeof(OutputConfiguration.CommentStyle));
             cbxBitLayout.DataSource = Enum.GetNames(typeof(OutputConfiguration.BitLayout));
