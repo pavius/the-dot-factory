@@ -17,7 +17,8 @@ namespace TheDotFactory
             None,               // no padding removal
             Tighest,            // remove padding as much as possible, per bitmap
             Fixed,              // remove padding as much as the bitmap with least padding
-            FixedCompact        // remove padding as much as the bitmap with least padding
+            FixedCompact,       // remove padding as much as the bitmap with least padding
+            TighestFixedDigits // remove padding as much as possible, but not for digits
         }
 
         // Line wrap

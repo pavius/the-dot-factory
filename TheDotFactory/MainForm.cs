@@ -601,7 +601,7 @@ namespace TheDotFactory
         private bool manipulateBitmap(Bitmap bitmapOriginal,
                                       BitmapBorder tightestCommonBorder,
                                       out Bitmap bitmapManipulated,
-                                      int minWidth, int minHeight)
+                                      int minWidth, int minHeight, bool isDigit)
         {
             //
             // First, crop
@@ -651,7 +651,9 @@ namespace TheDotFactory
 
             // should we crop vertically according to common
             if (m_outputConfig.paddingRemovalVertical == OutputConfiguration.PaddingRemoval.Fixed ||
-                m_outputConfig.paddingRemovalVertical == OutputConfiguration.PaddingRemoval.FixedCompact)
+                m_outputConfig.paddingRemovalVertical == OutputConfiguration.PaddingRemoval.FixedCompact ||
+                (m_outputConfig.paddingRemovalVertical == OutputConfiguration.PaddingRemoval.TighestFixedDigits &&
+                isDigit))
             {
                 // cropped X is according to common
                 bitmapCropBorder.leftX = tightestCommonBorder.leftX;
@@ -916,6 +918,10 @@ namespace TheDotFactory
                 // find the common tightest border
                 findTightestCommonBitmapBorder(fontInfo.characters, ref tightestCommonBorder);
             }
+            else if (m_outputConfig.paddingRemovalVertical == OutputConfiguration.PaddingRemoval.TighestFixedDigits)
+            {
+                findTightestCommonBitmapBorder(fontInfo.characters.Where(x => char.IsDigit(x.character)).ToArray(), ref tightestCommonBorder);
+            }
 
             //
             // iterate thruogh all bitmaps and generate the bitmap we will convert to string
@@ -930,7 +936,8 @@ namespace TheDotFactory
                                  tightestCommonBorder,
                                  out fontInfo.characters[charIdx].bitmapToGenerate,
                                  m_outputConfig.spaceGenerationPixels,
-                                 fontInfo.characters[charIdx].bitmapOriginal.Height);
+                                 fontInfo.characters[charIdx].bitmapOriginal.Height,
+                                 char.IsDigit(fontInfo.characters[charIdx].character));
 
                 // for debugging
                 // fontInfo.characters[charIdx].bitmapToGenerate.Save(String.Format("C:/bms/{0}_cropped.bmp", fontInfo.characters[charIdx].character));
@@ -1776,7 +1783,7 @@ namespace TheDotFactory
                 Bitmap bitmapManipulated;
 
                 // try to manipulate teh bitmap
-                if (!manipulateBitmap(bitmapOriginal, bitmapBorder, out bitmapManipulated, 0, 0))
+                if (!manipulateBitmap(bitmapOriginal, bitmapBorder, out bitmapManipulated, 0, 0, false))
                 {
                     // show error
                     MessageBox.Show("No black pixels found in bitmap (currently only monochrome bitmaps supported)",

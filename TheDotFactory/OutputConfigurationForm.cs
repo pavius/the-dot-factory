@@ -26,7 +26,9 @@ namespace TheDotFactory
         {
             // set datasources
             cbxPaddingHoriz.DataSource = Enum.GetNames(typeof(OutputConfiguration.PaddingRemoval))
-                .Where(x => x != OutputConfiguration.PaddingRemoval.FixedCompact.ToString()).ToList();
+                .Where(x => x != OutputConfiguration.PaddingRemoval.FixedCompact.ToString() &&
+                       x != OutputConfiguration.PaddingRemoval.TighestFixedDigits.ToString())
+                .ToList();
             cbxPaddingVert.DataSource = Enum.GetNames(typeof(OutputConfiguration.PaddingRemoval));
             cbxCommentStyle.DataSource = Enum.GetNames(typeof(OutputConfiguration.CommentStyle));
             cbxBitLayout.DataSource = Enum.GetNames(typeof(OutputConfiguration.BitLayout));
