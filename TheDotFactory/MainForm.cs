@@ -918,8 +918,11 @@ namespace TheDotFactory
                 // find the common tightest border
                 findTightestCommonBitmapBorder(fontInfo.characters, ref tightestCommonBorder);
             }
-            else if (m_outputConfig.paddingRemovalVertical == OutputConfiguration.PaddingRemoval.TighestFixedDigits)
+
+            if (m_outputConfig.paddingRemovalVertical == OutputConfiguration.PaddingRemoval.TighestFixedDigits)
             {
+                tightestCommonBorder.rightX = 0;
+                tightestCommonBorder.leftX = int.MaxValue;
                 findTightestCommonBitmapBorder(fontInfo.characters.Where(x => char.IsDigit(x.character)).ToArray(), ref tightestCommonBorder);
             }
 
